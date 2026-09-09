@@ -1,7 +1,7 @@
 FEARLESS MANAGER - GUI TEST REPORT
 Run 2026-09-02, against a real fearlessManaged0_001w.exe build, driven
 with actual mouse/keyboard input (not simulated). Test plan:
-https://marcoautomation.github.io/shared-docs/manager-gui-tests.txt
+https://marcoautomation2.github.io/shared-docs/manager-gui-tests.txt
 
 RESULTS
 Test 1  File association             7/7 PASS

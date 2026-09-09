@@ -17,7 +17,7 @@ project with Fearless-level tests later and it just shows up in the same
 file next time you import it - nothing new to pick.
 Full write-up (how this was wired up, screenshots, a standalone converter
 for projects outside Coordinator):
-https://marcoautomation.github.io/shared-docs/fearless/eclipse-tests/
+https://marcoautomation2.github.io/shared-docs/fearless/eclipse-tests/
 
 BUILDING AND RUNNING ZEROTOHERO / FEARLESSTOUR
 Neither repo ships a README or a build script. They must be sibling
@@ -51,7 +51,7 @@ the four Fearless repos one level up, all on the same machine.
    through System.getProperty("user.dir").
 Full write-up (why each of these was non-obvious, and what was found by
 actually doing this end to end):
-https://marcoautomation.github.io/shared-docs/fearless/zerotohero-alignment.html
+https://marcoautomation2.github.io/shared-docs/fearless/zerotohero-alignment.html
 
 This cheatsheet lives at
-https://marcoautomation.github.io/shared-docs/fearless/setup-cheatsheet.txt
+https://marcoautomation2.github.io/shared-docs/fearless/setup-cheatsheet.txt

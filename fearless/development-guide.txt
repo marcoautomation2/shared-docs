@@ -183,7 +183,7 @@ step fails rather than pushing on regardless:
      doesn't even pass its own automated suite.
   3. If that passed, exercise the manager GUI by hand (or however your
      environment can drive a GUI) against its published acceptance test
-     plan (https://marcoautomation.github.io/shared-docs/manager-gui-tests.txt),
+     plan (https://marcoautomation2.github.io/shared-docs/manager-gui-tests.txt),
      since no automated harness in this repository covers GUI behavior.
      Record what you find - especially any failure, with enough detail
      (what was expected, what happened) that someone else could reproduce
@@ -196,7 +196,7 @@ step fails rather than pushing on regardless:
      detail the scripted tests don't touch, a manager workflow the GUI
      plan doesn't exercise, something about the built application image
      itself rather than the source it runs. Before picking one, check
-     https://marcoautomation.github.io/shared-docs/fearless/exploratory-checks.txt
+     https://marcoautomation2.github.io/shared-docs/fearless/exploratory-checks.txt
      for what's already been tried, so successive checks broaden coverage
      instead of repeating each other. If what you tried passes, add a
      dated entry to that same log describing what you checked and how. If
@@ -206,4 +206,4 @@ step fails rather than pushing on regardless:
      permanent regression test.
 
 This guide lives at
-https://marcoautomation.github.io/shared-docs/fearless/development-guide.txt
+https://marcoautomation2.github.io/shared-docs/fearless/development-guide.txt
