@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fearless full test run &mdash; 2026-09-12</title>
+<style>
+  :root {
+    --bg: #faf9f7;
+    --surface: #ffffff;
+    --text: #1c1a17;
+    --muted: #6b6459;
+    --accent: #a8531e;
+    --border: #e6e1d8;
+    --pass-bg: #e9f5e9;
+    --pass-text: #1e6b2c;
+    --fail-bg: #fbe9e7;
+    --fail-text: #a3271b;
+    --warn-bg: #fff3d9;
+    --warn-text: #8a5a00;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #17140f;
+      --surface: #201c16;
+      --text: #f1ede4;
+      --muted: #a89f8f;
+      --accent: #e08a4f;
+      --border: #332d23;
+      --pass-bg: #163420;
+      --pass-text: #7fd696;
+      --fail-bg: #3a1f1a;
+      --fail-text: #f3897a;
+      --warn-bg: #3a2d10;
+      --warn-text: #f0c05f;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: ui-sans-serif, system-ui, "Segoe UI", Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+  }
+  main {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 4rem 1.5rem 6rem;
+  }
+  a { color: var(--accent); }
+  h1 {
+    font-size: 1.75rem;
+    margin: 0 0 0.4rem;
+    letter-spacing: -0.01em;
+  }
+  p.lede {
+    color: var(--muted);
+    margin: 0 0 2rem;
+  }
+  .backlink {
+    display: inline-block;
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+    color: var(--muted);
+    text-decoration: none;
+  }
+  .backlink:hover { color: var(--accent); }
+  .status-banner {
+    background: var(--pass-bg);
+    color: var(--pass-text);
+    border-radius: 10px;
+    padding: 1.1rem 1.3rem;
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-bottom: 0.6rem;
+  }
+  .status-sub {
+    color: var(--muted);
+    font-size: 0.92rem;
+    margin: 0 0 2.6rem;
+  }
+  h2 {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 700;
+    color: var(--muted);
+    margin: 2.6rem 0 1rem;
+  }
+  h2:first-of-type { margin-top: 0; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    font-size: 0.95rem;
+  }
+  th, td {
+    text-align: left;
+    padding: 0.7rem 0.9rem;
+    border-bottom: 1px solid var(--border);
+  }
+  th {
+    color: var(--muted);
+    font-weight: 600;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  tr:last-child td { border-bottom: none; }
+  .pill {
+    display: inline-block;
+    padding: 0.15rem 0.6rem;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 0.82rem;
+  }
+  .pill.pass { background: var(--pass-bg); color: var(--pass-text); }
+  .pill.warn { background: var(--warn-bg); color: var(--warn-text); }
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+  ul.notes { margin: 0; padding-left: 1.2rem; color: var(--text); }
+  ul.notes li { margin-bottom: 0.5rem; }
+  details {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.9rem 1.2rem;
+    margin-bottom: 1rem;
+  }
+  details + details { margin-top: 0; }
+  summary {
+    cursor: pointer;
+    font-weight: 600;
+  }
+  summary .pill { margin-left: 0.6rem; }
+  pre {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.9rem;
+    overflow-x: auto;
+    font-size: 0.82rem;
+    line-height: 1.45;
+    margin: 0.8rem 0 0;
+  }
+  footer {
+    margin-top: 3rem;
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<main>
+  <a class="backlink" href="../">&larr; Shared documents</a>
+  <h1>Fearless full test run</h1>
+  <p class="lede">Every kind of automated test the Fearless repos have, run back to back on a clean upstream-aligned checkout, including the desktop-driving GUI suite. 2026-09-12, marcoautomation2/fearlessBranch3.</p>
+
+  <div class="status-banner">All 5 suites passed &mdash; 2126 / 2126 tests, 0 failures</div>
+  <p class="status-sub">Total wall time: about 3 minutes 14 seconds (build + test, sequential, single machine). One suite (TestAgentTools) needed one environment-level retry before it ran green &mdash; see the note below the table; it is not a test or code failure.</p>
+
+  <h2>Results by suite</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Suite</th>
+        <th>Scope</th>
+        <th class="num">Tests</th>
+        <th class="num">Failed</th>
+        <th class="num">Duration</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>TestAllFrontend</td>
+        <td>Commons + Frontend</td>
+        <td class="num">727</td>
+        <td class="num">0</td>
+        <td class="num">7.5s</td>
+        <td><span class="pill pass">pass</span></td>
+      </tr>
+      <tr>
+        <td>TestAllFrontendCoordinator</td>
+        <td>+ Coordinator, excl. integrationTests</td>
+        <td class="num">258</td>
+        <td class="num">0</td>
+        <td class="num">11.9s</td>
+        <td><span class="pill pass">pass</span></td>
+      </tr>
+      <tr>
+        <td>TestAllFrontendCoordinatorIntegration</td>
+        <td>+ Coordinator integrationTests (compiles &amp; runs real Fearless programs)</td>
+        <td class="num">1022</td>
+        <td class="num">0</td>
+        <td class="num">83.9s</td>
+        <td><span class="pill pass">pass</span></td>
+      </tr>
+      <tr>
+        <td>TestAllController</td>
+        <td>+ Controllers manager GUI, excl. agentTools</td>
+        <td class="num">118</td>
+        <td class="num">0</td>
+        <td class="num">0.5s</td>
+        <td><span class="pill pass">pass</span></td>
+      </tr>
+      <tr>
+        <td>TestAgentTools</td>
+        <td>Controllers agentTools &mdash; drives the real desktop (window move/resize, pointer drag)</td>
+        <td class="num">1</td>
+        <td class="num">0</td>
+        <td class="num">19.5s</td>
+        <td><span class="pill pass">pass</span> <span class="pill warn">1 retry</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Notes</h2>
+  <ul class="notes">
+    <li>Working copy was reset to upstream main on all seven Fearless repos (align-branches) immediately before this run, so results reflect current upstream main, not any in-progress branch work.</li>
+    <li><code>TestAllFrontendCoordinatorIntegration</code> internally re-runs the Frontend suite (727 tests) before adding the Coordinator + integrationTests run (295 tests); the 1022 total above is the sum of both JUnit launches inside that one script.</li>
+    <li>No test suite required any code change to pass; nothing was patched, skipped, or retried to force a green result other than the one environment-level retry described below.</li>
+  </ul>
+
+  <details open>
+    <summary>TestAgentTools &mdash; first attempt failed on environment, not code <span class="pill warn">investigated</span></summary>
+    <p>The first run of <code>TestAgentTools.java</code> failed immediately with a desktop-portal error, not a test assertion:</p>
+    <pre>gi.repository.GLib.GError: g-dbus-error-quark: GDBus.Error:org.freedesktop.DBus.Error.Failed: Session creation inhibited (0)
+
+Failures (1):
+  JUnit Jupiter:DesktopDragTest:aFileDraggedBetweenTwoFolderWindowsMovesThere()
+    =&gt; java.lang.NullPointerException: Cannot invoke "String.equals(Object)" because "&lt;local2&gt;" is null
+       agentTools.Mutter.send(Mutter.java:45)
+       agentTools.Mutter.shot(Mutter.java:52)
+       agentTools.Pilot.shot(Pilot.java:38)
+       agentTools.DesktopDragTest.aFileDraggedBetweenTwoFolderWindowsMovesThere(DesktopDragTest.java:28)</pre>
+    <p>Cause: GNOME's screensaver/idle-blank state (<code>org.gnome.ScreenSaver GetActive</code> returned true, distinct from a locked session) makes <code>org.gnome.Mutter.RemoteDesktop CreateSession</code> refuse to open, which the test wraps in a <code>NullPointerException</code> when it tries to use the missing session. Fix applied: deactivate the screensaver over D-Bus (<code>org.gnome.ScreenSaver.SetActive false</code>) and re-run; no code, test, or repo content was changed. The re-run passed cleanly (19.5s, 1/1 tests, 4/4 containers).</p>
+  </details>
+
+  <footer>Generated by the Claude agent on marcoautomation2 as an overnight task. Full raw JUnit console output for all five runs is kept in the fearlessBranch3 working copy's overnight logs, not published here.</footer>
+</main>
+</body>
+</html>
