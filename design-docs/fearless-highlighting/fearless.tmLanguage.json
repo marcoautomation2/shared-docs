@@ -1,0 +1,121 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Fearless",
+  "scopeName": "source.fearless",
+  "fileTypes": ["fear"],
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#strings" },
+    { "include": "#keywords" },
+    { "include": "#types" },
+    { "include": "#numbers" },
+    { "include": "#methods" },
+    { "include": "#bindings" },
+    { "include": "#punctuation" },
+    { "include": "#operators" }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "begin": "/\\*",
+          "end": "\\*/",
+          "name": "comment.block.fearless"
+        },
+        { "match": "//>.*$", "name": "comment.line.documentation.example.fearless" },
+        { "match": "//-.*$", "name": "comment.line.documentation.testonly.fearless" },
+        { "match": "///.*$", "name": "comment.line.documentation.fearless" },
+        { "match": "//.*$", "name": "comment.line.double-slash.fearless" }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        { "match": "\"[^\"\\n]*\"", "name": "entity.name.type.literal.string.fearless" },
+        { "match": "`[^`\\n]*`", "name": "entity.name.type.literal.string.fearless" }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        { "match": "\\b(?:read/imm|readH|mutH|imm|iso|read|mut)\\b", "name": "storage.modifier.reference-capability.fearless" },
+        { "match": "(?<!\\.)\\b(?:use|map|as|in)\\b", "name": "keyword.other.contextual.fearless" }
+      ]
+    },
+    "types": {
+      "patterns": [
+        {
+          "match": "(?:(?!(?:con|prn|aux|nul)(?![a-z0-9_])|(?:com|lpt)[1-9](?![a-z0-9_]))[a-z][a-z0-9_]*\\.)?_*[A-Z][A-Za-z0-9_]*'*",
+          "name": "entity.name.type.fearless"
+        }
+      ]
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "match": "[+-](?:[0-9](?:[0-9_]*[0-9])?)\\.(?:[0-9](?:[0-9_]*[0-9])?)(?:[eE][+-]?[0-9](?:[0-9_]*[0-9])?)?(?:soft)?",
+          "name": "entity.name.type.literal.number.fearless"
+        },
+        {
+          "match": "[0-9](?:[0-9_]*[0-9])?\\.(?:[0-9](?:[0-9_]*[0-9])?)(?:[eE][+-]?[0-9](?:[0-9_]*[0-9])?)?(?:soft)?",
+          "name": "entity.name.type.literal.number.fearless"
+        },
+        {
+          "match": "[+-][0-9](?:[0-9_]*[0-9])?",
+          "name": "entity.name.type.literal.number.fearless"
+        },
+        {
+          "match": "[0-9](?:[0-9_]*[0-9])?",
+          "name": "entity.name.type.literal.number.fearless"
+        }
+      ]
+    },
+    "methods": {
+      "patterns": [
+        {
+          "match": "(\\.)(_*[a-z][A-Za-z0-9_]*'*)",
+          "captures": {
+            "1": { "name": "punctuation.accessor.fearless" },
+            "2": { "name": "entity.name.function.fearless" }
+          }
+        },
+        {
+          "match": "(\\.)((?:(?!/\\*|\\*/|//)(?:[\\\\/#*+%<>=!&^~?|]|-))+)",
+          "captures": {
+            "1": { "name": "punctuation.accessor.fearless" },
+            "2": { "name": "entity.name.function.operator.fearless" }
+          }
+        }
+      ]
+    },
+    "bindings": {
+      "patterns": [
+        {
+          "match": "\\b_*[a-z][A-Za-z0-9_]*'*(?=\\s*:)",
+          "name": "variable.parameter.fearless"
+        },
+        {
+          "match": "\\b_*[a-z][A-Za-z0-9_]*'*(?=\\s*=(?!=))",
+          "name": "variable.parameter.fearless"
+        },
+        {
+          "match": "_*[a-z][A-Za-z0-9_]*'*",
+          "name": "source.fearless"
+        }
+      ]
+    },
+    "punctuation": {
+      "patterns": [
+        { "match": "->", "name": "punctuation.arrow.fearless" },
+        { "match": "::", "name": "punctuation.separator.fearless" },
+        { "match": "[(){}\\[\\],;:_']", "name": "punctuation.fearless" }
+      ]
+    },
+    "operators": {
+      "patterns": [
+        {
+          "match": "(?:(?!/\\*|\\*/|//)(?:[\\\\/#*+%<>=!&^~?|]|-))+",
+          "name": "keyword.operator.fearless"
+        }
+      ]
+    }
+  }
+}
