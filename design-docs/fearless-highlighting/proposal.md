@@ -65,30 +65,31 @@ not a guess.
   from "identifiers are contextual" - the leading dot removes the
   ambiguity entirely at the lexer level.
 
-1.5 Parameter names are the genuinely hard category
+1.5 Parameter names - one category, every bare LowercaseId
   Parameter declarations are bare LowercaseId tokens: Parser.java's
   parseXPat/parseParam call expect("parameter name", LowercaseId) with
   no distinguishing punctuation of their own other than being followed by
   ":" in a parameter list, e.g. ".cmp[R:**](t0: read T, t1: read T)".
-  But LowercaseId is heavily overloaded - the SAME token kind is used
-  for:
-  - parameter declarations: "t0" in "(t0: read T)"
-  - "let"-sugar bindings: "pod" in ".let pod={...}" (LowercaseId
-    immediately followed by "=", per Parser.eqSugar)
-  - uses/reads of a parameter or binding anywhere later in an expression:
-    "t0" appearing again inside the method body
-  - the implicit receiver name "this" (not a keyword at all - Parser.java
-    special-cases the literal string "this" only for name-resolution
-    bookkeeping; lexically it is just another LowercaseId, so a user
-    could shadow it and the tokenizer would not care)
-  - the lowercase package-prefix fragment of a dotted type name is
-    NOT a separate LowercaseId token (it is absorbed into UppercaseId's
-    own regex), so that specific ambiguity does not actually arise -
-    good news for a regex highlighter.
-  A lexer alone cannot tell "parameter declaration" from "later use of
-  that same parameter" from "some other bare lowercase word Fearless
-  happens to allow there" - that requires scope tracking, which is a
-  parser/binder concern, not a lexer concern.
+  The same token kind, LowercaseId, is also used for "let"-sugar bindings
+  ("pod" in ".let pod={...}"), for every later use/read of a parameter or
+  binding inside the method body ("t0" appearing again after its
+  declaration), and for the implicit receiver name "this" (not a keyword
+  at all - Parser.java special-cases the literal string "this" only for
+  name-resolution bookkeeping; lexically it is just another LowercaseId,
+  the implicit parameter zero, so a user could shadow it and the
+  tokenizer would not care). All four of these are, by design, the SAME
+  highlighting category: Fearless draws no visual distinction between
+  declaring a name and reading it back, so this proposal draws none
+  either. That collapses what could look like a scope-tracking problem
+  into a plain regex: any bare LowercaseId, in any position, is a
+  parameter name. The only carve-outs are the ones already covered by
+  other categories - the leading dot of a method name removes its
+  LowercaseId from consideration entirely (1.4), the lowercase
+  package-prefix of a dotted type name is absorbed into UppercaseId's own
+  regex and never becomes a separate LowercaseId token (so that
+  ambiguity does not arise - good news for a regex highlighter), and the
+  four contextual keywords (1.2) take priority over the parameter
+  category when they appear as bare words.
 
 1.6 Comments - three doc-comment kinds, and how they're really told apart
   Confirmed both in TokenKind.java (Ws/LineComment/BlockComment are the
@@ -113,9 +114,9 @@ not a guess.
   line-oriented highlighter already has to track anyway. Note //- is
   defined and real but I did not find a live example of it in the current
   StandardLibrary/base sources (grep only turns up "///-" i.e. a "-"
-  inside ordinary /// prose, e.g. a markdown bullet) - it is exercised in
-  practice, if at all, only occasionally; worth confirming with Marco
-  whether it is still an intended feature.
+  inside ordinary /// prose, e.g. a markdown bullet); Marco confirms it is
+  still an intended feature (section 5), so it keeps its own comment kind
+  even though currently unused in practice.
 
 1.7 Punctuation / "everything else"
   Structural tokens with fixed spelling: -> ( ) { } [ ] , ; :: : ' _
@@ -141,26 +142,22 @@ regex-match tokens but cannot track *bindings* or *scope*. Concretely:
   (UppercaseId + the four literal shapes).
 - "method name" also needs only regex, thanks to the glued dot: safe and
   cheap.
-- "parameter name" needs a symbol table: which LowercaseId occurrences
-  are the *same* binding introduced by which declaration, and which
-  scope is it visible in. A TextMate grammar cannot compute that - each
-  line is (mostly) tokenized independently of the others' bindings. The
-  best a regex grammar can do is a positional heuristic: color a
-  LowercaseId as "parameter-like" only where it sits in a declaration
-  position (immediately before ":" inside a "(...)" list, or before "="
-  in let-sugar), and leave every other bare lowercase word - including
-  every later *use* of that very parameter - as plain, unhighlighted
-  text. This is a real, known trade-off, not an oversight: getting
-  parameter *uses* colored (not just declarations) requires an actual
-  incremental parser wired to the editor, i.e. a language server, because
-  only a real parse + name resolution pass (which is exactly what
-  Frontend already does) can tell "this lowercase word right here is a
-  read of parameter t0" from "this lowercase word is something else".
-- Fully correct semantic highlighting (distinguishing an unresolved name
-  from a real one, or a shadowed "this", or highlighting a name
-  differently because it resolves to a field vs a local) needs a live
-  binder, which only a language server (LSP) backed by Frontend's own
-  parser/name-resolution can give.
+- "parameter name" would need a symbol table - which LowercaseId
+  occurrences are the *same* binding introduced by which declaration, and
+  in which scope - if the goal were to color a declaration differently
+  from its later uses, or to tell one parameter's uses apart from
+  another's. That is not the goal here: since every bare LowercaseId
+  (declaration, let-sugar binding, later use, or "this") shares one
+  color, no scope tracking is needed at all - a plain regex gets 100% of
+  this category right, not just an approximation of it.
+- What a TextMate grammar still structurally cannot do is *semantic*
+  highlighting proper: distinguishing an unresolved name from a real one,
+  telling a shadowed "this" apart from the outer one, or coloring a name
+  differently because it resolves to a field vs a local. That needs a
+  live binder, which only a language server (LSP) backed by Frontend's
+  own parser/name-resolution can give - see design C below. Nothing in
+  the six-category scheme this proposal targets needs that; it would only
+  matter for a *richer* category set than the one asked for here.
 
 3. Recommended color categories (refining Marco's list)
 =========================================================
@@ -173,12 +170,13 @@ suggests one addition and one clarification.
      linguistically accurate. A theme is free to give literals a
      slightly different shade of the "type" color if desired, but they
      should not be a wholly separate category from types conceptually.
-  2. Method names - the ".name" / ".op" token, dot included or excluded
-     from the colored span (cosmetic choice; POC colors the identifier,
-     not the dot).
-  3. Parameter names - declaration sites only, via the positional
-     heuristic in section 2. Explicitly NOT parameter *uses*; see below
-     for what closes that gap.
+  2. Method names - the ".name" / ".op" token, dot included in the
+     colored span (the dot and the name are one token from the lexer's
+     own point of view; the grammar colors them as one span, not two).
+  3. Parameter names - every bare LowercaseId: declaration sites,
+     let-sugar bindings, every later use/read, and "this". Fearless
+     itself draws no distinction between declaring a name and reading it
+     back, so the highlighting draws none either - see section 1.5/2.
   4. Comments - split into the four kinds the tooling already
      distinguishes: /// (doc), //> (doc + runnable example), //- (doc,
      test-only example), // (plain). A theme can give all four the same
@@ -188,13 +186,11 @@ suggests one addition and one clarification.
      These really are keywords (fixed spelling, never identifiers), so
      they deserve their own "keyword" bucket distinct from punctuation.
   6. Everything else - punctuation (braces/brackets/commas/colons/arrow)
-     AND the operator-symbol run, AND every bare lowercase identifier
-     that is not a declaration site (i.e. every parameter/binding *use*,
-     plus "this"). Marco's list already puts punctuation and "keywords
-     like mut/imm" in the same bucket; this proposal splits them (5 vs 6)
-     since mut/imm are real reserved words and punctuation is not, but a
-     single merged "everything else" bucket is equally defensible if
-     simplicity is preferred.
+     AND the operator-symbol run. Marco's list already puts punctuation
+     and "keywords like mut/imm" in the same bucket; this proposal splits
+     them (5 vs 6) since mut/imm are real reserved words and punctuation
+     is not, but a single merged "everything else" bucket is equally
+     defensible if simplicity is preferred.
   One optional addition worth considering: contextual keywords
   (use/map/as/in) as a distinct, clearly-marked-as-approximate 7th
   bucket, since a regex grammar cannot avoid false-highlighting a
@@ -207,12 +203,13 @@ A. Cheap TextMate-grammar approximation (what the POC below implements)
    - One static .tmLanguage.json, no build step, works instantly in any
      TextMate-based editor/viewer (VS Code, GitHub, many others).
    - Gets exactly right: types (identifiers + all 4 literal forms),
-     method names, all 4 comment kinds, the 6 reference-capability
+     method names, parameter names (every declaration, let-sugar binding,
+     later use, and "this" - one color, no positional heuristic needed,
+     see section 1.5/2), all 4 comment kinds, the 6 reference-capability
      keywords, punctuation, operators.
-   - Approximates: parameter names (declaration sites only, via the
-     before-":"/before-"=" heuristic) and the 4 contextual keywords
-     (use/map/as/in), which will occasionally mis-highlight a
-     parameter/method that happens to share one of those 4 spellings.
+   - Approximates: the 4 contextual keywords (use/map/as/in), which will
+     occasionally mis-highlight a parameter/method that happens to share
+     one of those 4 spellings.
    - Cost: near zero - a few hours to write, test, and iterate; no
      runtime dependency; ships as a single file.
    - Recommended as the immediate, no-regrets first cut: it visibly
@@ -245,12 +242,13 @@ C. LSP-backed semantic highlighting using Frontend's own parser
      (textDocument/semanticTokens). VS Code (and other LSP-aware
      editors) then color tokens using the *real* parse tree instead of
      regex guesses.
-   - Gets right everything A/B get right, PLUS the two things a lexer
-     structurally cannot: parameter *uses* (every occurrence of a bound
-     name, not just its declaration), and could go further - e.g. color
-     an unresolved/erroring name differently, or grey out an
-     unreachable branch, or distinguish "this" as implicit receiver from
-     a real local.
+   - Gets right everything A/B get right, PLUS what a lexer structurally
+     cannot within a *richer* category set than the six used here - e.g.
+     color an unresolved/erroring name differently, grey out an
+     unreachable branch, or distinguish a shadowed "this" from the outer
+     one. It does not add anything for the six categories themselves:
+     design A already gets parameter uses and "this" right with plain
+     regex (section 1.5/2).
    - Cost: substantial - this is a real, ongoing piece of software (an
      incremental reparse-on-edit pipeline hung off Frontend, a
      semantic-tokens encoder, a server process/protocol handler,
@@ -262,28 +260,35 @@ C. LSP-backed semantic highlighting using Frontend's own parser
      highlighting is smaller than building highlighting-only tooling
      from scratch.
    - Recommended as the eventual target if Fearless tooling grows an
-     editor story beyond "syntax coloring", but clearly not a
-     same-night deliverable, and not needed just to fix the
-     parameter-use gap if that gap is judged tolerable.
+     editor story beyond "syntax coloring" (go-to-definition,
+     rename-refactor, live type errors), but clearly not a same-night
+     deliverable, and not needed just for highlighting since design A
+     already covers the six categories correctly.
 
 Suggested path: ship A (or B) now as a low-cost, immediate improvement;
 treat C as a separate, larger initiative to consider only if/when
 Fearless invests in broader editor tooling (since C's cost is justified
 mainly by everything else it would unlock, not by highlighting alone).
 
-5. Open questions for Marco
+5. Resolved by Marco
+=====================
+- //- is still meant to be used in practice; keep it as its own
+  doc-comment kind even though no live example currently exists in
+  StandardLibrary/base.
+- Parameter names are a single category covering declarations,
+  let-sugar bindings, every later use, and "this" (the implicit
+  parameter zero) - no distinction between declaring a name and reading
+  it back. See section 1.5/2 and bucket 3 in section 3.
+- The lowercase package-prefix of a dotted type name belongs to the type
+  name category, as already implemented (section 1.5, 1.3).
+- Method names are colored dot-included: the "." and the name/operator
+  that follows it are one colored span, not two.
+
+6. Open questions for Marco
 =============================
-- Is //- still meant to be used in practice? No live example was found in
-  StandardLibrary/base; SourceDocs.java clearly implements it, but it may
-  be effectively dead in current library-writing practice.
 - Design A vs B: is a false-positive-prone highlight for use/map/as/in
   worse than no highlight for them? (Section 4.B)
 - Bucket 5 vs 6: keep reference-capability keywords as their own color,
   or fold them into "everything else" as originally sketched?
-- Is the "parameter declaration only, not parameter use" limitation of a
-  regex grammar (section 2) acceptable for a first release, or is it
-  worth prioritizing the LSP-based approach (design C) sooner because
-  half-highlighted parameters reads as more confusing than not
-  highlighting them at all?
 - Should literal values (numbers/strings) share the exact type color, or
   get a distinguishable shade within the same category (section 3.1)?

@@ -10,7 +10,7 @@
     { "include": "#types" },
     { "include": "#numbers" },
     { "include": "#methods" },
-    { "include": "#bindings" },
+    { "include": "#parameters" },
     { "include": "#punctuation" },
     { "include": "#operators" }
   ],
@@ -71,34 +71,20 @@
     "methods": {
       "patterns": [
         {
-          "match": "(\\.)(_*[a-z][A-Za-z0-9_]*'*)",
-          "captures": {
-            "1": { "name": "punctuation.accessor.fearless" },
-            "2": { "name": "entity.name.function.fearless" }
-          }
+          "match": "\\._*[a-z][A-Za-z0-9_]*'*",
+          "name": "entity.name.function.fearless"
         },
         {
-          "match": "(\\.)((?:(?!/\\*|\\*/|//)(?:[\\\\/#*+%<>=!&^~?|]|-))+)",
-          "captures": {
-            "1": { "name": "punctuation.accessor.fearless" },
-            "2": { "name": "entity.name.function.operator.fearless" }
-          }
+          "match": "\\.(?:(?!/\\*|\\*/|//)(?:[\\\\/#*+%<>=!&^~?|]|-))+",
+          "name": "entity.name.function.operator.fearless"
         }
       ]
     },
-    "bindings": {
+    "parameters": {
       "patterns": [
         {
-          "match": "\\b_*[a-z][A-Za-z0-9_]*'*(?=\\s*:)",
-          "name": "variable.parameter.fearless"
-        },
-        {
-          "match": "\\b_*[a-z][A-Za-z0-9_]*'*(?=\\s*=(?!=))",
-          "name": "variable.parameter.fearless"
-        },
-        {
           "match": "_*[a-z][A-Za-z0-9_]*'*",
-          "name": "source.fearless"
+          "name": "variable.parameter.fearless"
         }
       ]
     },

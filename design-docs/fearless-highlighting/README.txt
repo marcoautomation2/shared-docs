@@ -3,15 +3,18 @@ Fearless syntax highlighting design - overnight task, 2026-09-12/13
 Files in this folder:
 - proposal.md
     The design write-up: what the real Frontend grammar supports, why
-    "type name" and "method name" are lexer-detectable but "parameter
-    name" fundamentally is not without a real parser, three concrete
-    design options with tradeoffs, and open questions for Marco.
+    "type name", "method name" and "parameter name" (declarations,
+    let-sugar bindings, later uses, and "this" - one category, since
+    Fearless draws no distinction between them) are all lexer-detectable,
+    three concrete design options with tradeoffs, and open questions for
+    Marco.
 - fearless.tmLanguage.json
     A working TextMate grammar implementing design option A/B from the
     proposal: comments (including the /// //> //- split), the 6
     reference-capability keywords, type names (identifiers and all 4
-    literal forms), method names (the ".name" token), a best-effort
-    parameter-declaration heuristic, punctuation and operators.
+    literal forms), method names (the "." included in the colored span),
+    parameter names (every bare lowercase identifier, declaration or
+    use, including "this"), punctuation and operators.
     Tested (see below) against all 88 real .fear files currently in
     StandardLibrary (base, rt, and the integrationTests sample projects):
     every non-blank character in every file lands in some named scope,
