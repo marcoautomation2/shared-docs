@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fearless full test run (Windows) &mdash; 2026-09-14</title>
+<style>
+  :root {
+    --bg: #faf9f7;
+    --surface: #ffffff;
+    --text: #1c1a17;
+    --muted: #6b6459;
+    --accent: #a8531e;
+    --border: #e6e1d8;
+    --pass-bg: #e9f5e9;
+    --pass-text: #1e6b2c;
+    --fail-bg: #fbe9e7;
+    --fail-text: #a3271b;
+    --warn-bg: #fff3d9;
+    --warn-text: #8a5a00;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #17140f;
+      --surface: #201c16;
+      --text: #f1ede4;
+      --muted: #a89f8f;
+      --accent: #e08a4f;
+      --border: #332d23;
+      --pass-bg: #163420;
+      --pass-text: #7fd696;
+      --fail-bg: #3a1f1a;
+      --fail-text: #f3897a;
+      --warn-bg: #3a2d10;
+      --warn-text: #f0c05f;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: ui-sans-serif, system-ui, "Segoe UI", Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+  }
+  main {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 4rem 1.5rem 6rem;
+  }
+  a { color: var(--accent); }
+  h1 {
+    font-size: 1.75rem;
+    margin: 0 0 0.4rem;
+    letter-spacing: -0.01em;
+  }
+  p.lede {
+    color: var(--muted);
+    margin: 0 0 2rem;
+  }
+  .backlink {
+    display: inline-block;
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+    color: var(--muted);
+    text-decoration: none;
+  }
+  .backlink:hover { color: var(--accent); }
+  .status-banner {
+    background: var(--warn-bg);
+    color: var(--warn-text);
+    border-radius: 10px;
+    padding: 1.1rem 1.3rem;
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-bottom: 0.6rem;
+  }
+  .status-sub {
+    color: var(--muted);
+    font-size: 0.92rem;
+    margin: 0 0 2.6rem;
+  }
+  h2 {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 700;
+    color: var(--muted);
+    margin: 2.6rem 0 1rem;
+  }
+  h2:first-of-type { margin-top: 0; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    font-size: 0.95rem;
+  }
+  th, td {
+    text-align: left;
+    padding: 0.7rem 0.9rem;
+    border-bottom: 1px solid var(--border);
+  }
+  th {
+    color: var(--muted);
+    font-weight: 600;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  tr:last-child td { border-bottom: none; }
+  .pill {
+    display: inline-block;
+    padding: 0.15rem 0.6rem;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 0.82rem;
+    white-space: nowrap;
+  }
+  .pill.pass { background: var(--pass-bg); color: var(--pass-text); }
+  .pill.fail { background: var(--fail-bg); color: var(--fail-text); }
+  .pill.warn { background: var(--warn-bg); color: var(--warn-text); }
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+  ul.notes { margin: 0; padding-left: 1.2rem; color: var(--text); }
+  ul.notes li { margin-bottom: 0.5rem; }
+  details {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.9rem 1.2rem;
+    margin-bottom: 1rem;
+  }
+  details + details { margin-top: 0; }
+  summary {
+    cursor: pointer;
+    font-weight: 600;
+  }
+  summary .pill { margin-left: 0.6rem; }
+  pre {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.9rem;
+    overflow-x: auto;
+    font-size: 0.82rem;
+    line-height: 1.45;
+    margin: 0.8rem 0 0;
+  }
+  code { font-size: 0.92em; }
+  footer {
+    margin-top: 3rem;
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<main>
+  <a class="backlink" href="./">&larr; Shared documents</a>
+  <h1>Fearless full test run (Windows)</h1>
+  <p class="lede">Every kind of automated test the Fearless repos have, plus the manual GUI acceptance test plan (<a href="./manager-gui-tests.txt">manager-gui-tests.txt</a>), run back to back on a clean upstream-aligned checkout. 2026-09-14, marcoautomation2/fearlessBranch3, win3 overnight task, Windows 11.</p>
+
+  <div class="status-banner">Automated suites: 4/4 suites clean (2636/2636 tests, 2 assumption-skipped, 0 failed) &mdash; agentTools desktop-drag test: 1 reproducible failure &mdash; manual GUI plan: 8/9 tests fully pass, 1 partial</div>
+  <p class="status-sub">align-branches was run first, resetting all seven repos to upstream main (five sibling overnight agents had opened unmerged PRs earlier the same night against Frontend, Commons, Coordinator and StandardLibrary; none were merged, so this run tests plain upstream main, not any pending branch). Two genuine, precisely isolated issues were found and are described below; nothing was fixed as part of this task.</p>
+
+  <h2>Automated suites</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Suite</th>
+        <th>Scope</th>
+        <th class="num">Tests</th>
+        <th class="num">Failed</th>
+        <th class="num">Duration</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>TestAllFrontend</td>
+        <td>Commons + Frontend</td>
+        <td class="num">981</td>
+        <td class="num">0</td>
+        <td class="num">~27.1s</td>
+        <td><span class="pill pass">pass</span></td>
+      </tr>
+      <tr>
+        <td>TestAllFrontendCoordinator</td>
+        <td>+ Coordinator, excl. integrationTests</td>
+        <td class="num">258</td>
+        <td class="num">0</td>
+        <td class="num">~28.6s</td>
+        <td><span class="pill pass">pass (1 assumption-skipped)</span></td>
+      </tr>
+      <tr>
+        <td>TestAllFrontendCoordinatorIntegration</td>
+        <td>+ Coordinator integrationTests (compiles &amp; runs real Fearless programs)</td>
+        <td class="num">1276</td>
+        <td class="num">0</td>
+        <td class="num">~168s</td>
+        <td><span class="pill pass">pass (1 assumption-skipped)</span></td>
+      </tr>
+      <tr>
+        <td>TestAllController</td>
+        <td>+ Controllers manager GUI, excl. agentTools</td>
+        <td class="num">121</td>
+        <td class="num">0</td>
+        <td class="num">~2.3s</td>
+        <td><span class="pill pass">pass</span></td>
+      </tr>
+      <tr>
+        <td>TestAgentTools</td>
+        <td>Controllers agentTools &mdash; drives the real desktop (opens two folder windows, drags a file between them)</td>
+        <td class="num">1</td>
+        <td class="num">1</td>
+        <td class="num">n/a</td>
+        <td><span class="pill fail">fail (2/2 runs)</span></td>
+      </tr>
+    </tbody>
+  </table>
+  <p class="status-sub" style="margin-top:0.8rem">TestAllFrontendCoordinatorIntegration's 1276 total is two JUnit launches inside one script: 981 (Frontend+Coordinator rebuild) plus 295 integrationTests. The two "assumption-skipped" tests (one in TestAllFrontendCoordinator, one in the integrationTests phase) reported as JUnit "aborted", not "failed" &mdash; the console summary gives no further detail on which test or why; both are consistent with an environment-gated assumption, not a regression.</p>
+
+  <h2>Finding &mdash; real-desktop file drag test fails reproducibly</h2>
+  <details open>
+    <summary>DesktopDragTest.aFileDraggedOntoAFolderMovesInsideIt <span class="pill fail">reproducible, cause narrowed</span></summary>
+    <p>Ran twice back to back (after waiting out an unrelated build-directory lock from a concurrent script run in the same checkout), identical failure signature both times:</p>
+    <pre>java.lang.AssertionError
+  at agentTools.Pilot.changed(Pilot.java:95)
+  at agentTools.DesktopDragTest.row(DesktopDragTest.java:51)
+  at agentTools.DesktopDragTest.aFileDraggedOntoAFolderMovesInsideIt(DesktopDragTest.java:35/36)</pre>
+    <p>The test opens a real Explorer folder window via <code>Desktop.getDesktop().open()</code>, sends an arrow key, and expects a solid changed region (the selection highlight) between before/after screenshots of that window; <code>Pilot.changed</code>'s <code>assert bestN&gt;0</code> fails because no such region is found. Run 1 failed on the first row() call (the VK_DOWN selection), run 2 on the second (VK_UP) &mdash; different point, same assertion, both within the same freshly-opened-window step. This points at the just-opened Explorer window not reliably holding keyboard focus by the time the arrow key is sent (the fixed 400ms pause after <code>Desktop.open()</code> may not always be enough on this machine), rather than a Pilot mechanism failure in general &mdash; plain clicks, drags and key presses inside already-focused windows worked correctly throughout the rest of this run (see the manual GUI tests below, driven with the same input primitives). Not fixed as part of this task; the test's own cleanup (closing the Explorer window, deleting its temp folder) did not run because the assertion aborts mid-test, so this was done by hand afterward.</p>
+  </details>
+
+  <h2>Manual GUI acceptance tests (manager-gui-tests.txt, 9 tests)</h2>
+  <p>Built the managed application image (<code>DeployManagedFearless.java</code>) and drove it with real synthetic mouse/keyboard input (slow pointer glide, key-down/key-up, screenshot comparison), the same primitives as Controllers' <code>agentTools.Pilot</code>. The three example projects the test plan names (01_hello_world, 02_mains_in_methods, 09_gui_basics) do not exist under those names in this checkout &mdash; per the plan's own note they map to <code>StandardLibrary/integrationTests/{helloWorld, mainInMethod, testGui1}</code>, which is what was used; the manager's own tile names came out as "hello_world", "maininmethod" and "start" respectively (folder-name/marker-file driven, not literal fixture names).</p>
+  <table>
+    <thead>
+      <tr>
+        <th>Test</th>
+        <th>Result</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>1&nbsp;&mdash;&nbsp;File association</td><td><span class="pill pass">7/7 pass</span></td></tr>
+      <tr><td>2&nbsp;&mdash;&nbsp;Split view and divider</td><td><span class="pill pass">4/4 pass</span></td></tr>
+      <tr><td>3&nbsp;&mdash;&nbsp;Compile and run</td><td><span class="pill warn">3/4 pass, step 4 fails</span></td></tr>
+      <tr><td>4&nbsp;&mdash;&nbsp;Second project</td><td><span class="pill pass">4/4 pass</span></td></tr>
+      <tr><td>5&nbsp;&mdash;&nbsp;Running program and Terminate</td><td><span class="pill pass">4/4 pass</span></td></tr>
+      <tr><td>6&nbsp;&mdash;&nbsp;Window close vs Quit</td><td><span class="pill pass">3/3 pass</span></td></tr>
+      <tr><td>7&nbsp;&mdash;&nbsp;Nested folder rejected</td><td><span class="pill pass">2/2 pass</span></td></tr>
+      <tr><td>8&nbsp;&mdash;&nbsp;Clear cache and Forget project</td><td><span class="pill pass">3/3 pass</span></td></tr>
+      <tr><td>9&nbsp;&mdash;&nbsp;Recompile after Clear cache</td><td><span class="pill pass">2/2 pass</span></td></tr>
+    </tbody>
+  </table>
+  <p class="status-sub" style="margin-top:0.8rem">Every check was directly observed (screenshot or process check), including the taskbar tray-icon double-click that this machine's own GUI notes flag as generally unreliable &mdash; it worked on the first attempt this run, consistent with "unreliable" rather than "always fails". One recurring, non-failing step not mentioned in the plan text: after adding a folder and selecting its tile, a "Become code" button must be clicked once before Compile/Run appear (the plan assumes Compile is immediately available).</p>
+
+  <h2>Finding &mdash; Compile/Run output needs scrolling to see in full</h2>
+  <details open>
+    <summary>TEST 3, step 4 <span class="pill fail">reproducible</span></summary>
+    <p>The plan requires "all the text is visible, no need to scroll output to see it all, no need of manual resizing" after running all 5 mains of the hello_world project. This did not hold: the Output panel is a fixed-height text box with its own scrollbar, and after the run it auto-scrolls to the bottom, leaving the first lines (<code>--- compiling helloWorld ---</code>, <code>--- compile done ---</code>, <code>--- running hello.Hello1 ---</code>) scrolled out of view. Confirmed by dragging the panel's own scrollbar thumb from mid-track to the top and finding those lines still present, just not shown by default. The Manager window was already maximized to the full 1920&times;1080 screen at the time, so this is not a can't-resize-far-enough artifact of this particular run; it is a genuine layout limitation of the fixed-height Output panel once enough mains have run to fill it.</p>
+  </details>
+
+  <h2>Notes</h2>
+  <ul class="notes">
+    <li>Working copy was reset to upstream main on all seven repos (align-branches) before anything else; five sibling overnight agents' PRs against Frontend, Commons, Coordinator and StandardLibrary were left open, unmerged, and untouched.</li>
+    <li>A build-directory race was hit twice: this task's own script runs (TestAllController.java) and a delegated sub-task's builds (TestAgentTools.java / DeployManagedFearless.java) both write to the same <code>out/modular</code> directory in one checkout when run concurrently, producing transient <code>module not found</code> javac errors with no real cause. Resolved by serializing: waiting for one side's java.exe processes to fully exit (checked via <code>Get-Process</code>) before starting the other. Not a product bug, an operational hazard of running two Java-script launches against the same working copy at once.</li>
+    <li>Controllers' <code>agentTools.Pilot</code> in this checkout drives input purely through <code>java.awt.Robot</code> (SetCursorPos/mouse_event/keybd_event equivalents). Plain clicks, key presses, and drags within already-focused application windows worked reliably throughout the whole session; the one place a fresh window's keyboard focus was not reliably ready in time was the DesktopDragTest finding above.</li>
+    <li>No file left behind by this task affects any repository; the built application images, scratch PowerShell helpers, and screenshots used for verification live only in the fearlessBranch3 working copy / session scratchpad, not committed anywhere.</li>
+  </ul>
+
+  <footer>Generated by the Claude agent on marcoautomation2 as an overnight task (win3). Full step-by-step log for the manual GUI run, and the per-suite JUnit console output, are kept in the fearlessBranch3 working copy's <code>overnight_logs</code> folder, not published here.</footer>
+</main>
+</body>
+</html>
