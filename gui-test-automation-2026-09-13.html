@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Manual-then-auto GUI test harness &mdash; 2026-09-13</title>
+<style>
+  :root {
+    --bg: #faf9f7;
+    --surface: #ffffff;
+    --text: #1c1a17;
+    --muted: #6b6459;
+    --accent: #a8531e;
+    --border: #e6e1d8;
+    --pass-bg: #e9f5e9;
+    --pass-text: #1e6b2c;
+    --warn-bg: #fff3d9;
+    --warn-text: #8a5a00;
+    --code-bg: #f1ede4;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #17140f;
+      --surface: #201c16;
+      --text: #f1ede4;
+      --muted: #a89f8f;
+      --accent: #e08a4f;
+      --border: #332d23;
+      --pass-bg: #163420;
+      --pass-text: #7fd696;
+      --warn-bg: #3a2d10;
+      --warn-text: #f0c05f;
+      --code-bg: #201c16;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: ui-sans-serif, system-ui, "Segoe UI", Helvetica, Arial, sans-serif;
+    line-height: 1.55;
+  }
+  main { max-width: 860px; margin: 0 auto; padding: 4rem 1.5rem 6rem; }
+  a { color: var(--accent); }
+  h1 { font-size: 1.75rem; margin: 0 0 0.4rem; letter-spacing: -0.01em; }
+  h2 { font-size: 1.3rem; margin-top: 2.6rem; border-bottom: 1px solid var(--border); padding-bottom: 0.4rem; }
+  h3 { font-size: 1.05rem; margin-top: 1.8rem; color: var(--accent); }
+  p.lede { color: var(--muted); margin: 0 0 2rem; }
+  .backlink { display: inline-block; margin-bottom: 1.5rem; font-size: 0.9rem; }
+  code { background: var(--code-bg); padding: 0.1em 0.4em; border-radius: 4px; font-size: 0.92em; }
+  pre { background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; overflow-x: auto; font-size: 0.85rem; }
+  pre code { background: none; padding: 0; }
+  table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+  th, td { border: 1px solid var(--border); padding: 8px 10px; text-align: left; vertical-align: top; font-size: 0.92rem; }
+  th { background: var(--surface); }
+  .badge { display: inline-block; padding: 0.15em 0.6em; border-radius: 999px; font-size: 0.82rem; font-weight: 600; }
+  .pass { background: var(--pass-bg); color: var(--pass-text); }
+  .warn { background: var(--warn-bg); color: var(--warn-text); }
+  .note { background: var(--surface); border: 1px solid var(--border); border-left: 3px solid var(--accent); padding: 10px 14px; border-radius: 0 6px 6px 0; margin: 1rem 0; }
+  ul { padding-left: 1.3rem; }
+  li { margin: 0.35rem 0; }
+  footer { color: var(--muted); margin-top: 3rem; font-size: 0.85rem; border-top: 1px solid var(--border); padding-top: 1rem; }
+</style>
+</head>
+<body>
+<main>
+
+<a class="backlink" href="index.html">&larr; shared-docs</a>
+<h1>Manual-then-auto GUI test harness</h1>
+<p class="lede">Overnight task on <code>linux3</code>, 2026-09-13/14: explaining how <code>agentTools</code> actually
+drives the desktop, then building the "drive by hand once, replay by script forever" workflow for 3 of the 9
+Fearless Manager GUI tests.</p>
+
+<h2>The setup/granularity question</h2>
+<p>The task that triggered this asked a very concrete question: what actually drives the mouse, and at what
+granularity does an agent make decisions versus a program just executing steps? Reading
+<code>Controllers/src/agentTools/Pilot.java</code> on this checkout (branch3, reset to upstream
+<code>FearlessLang/Controllers</code>) and comparing it against the previously-published guide at
+<a href="https://marcoautomation2.github.io/Controllers/">marcoautomation2.github.io/Controllers</a> answers it, with
+one caveat surfaced along the way.</p>
+<p><strong>The mechanism.</strong> <code>Pilot</code> is a thin wrapper over <code>java.awt.Robot</code>: it moves a
+real pointer, presses and releases real mouse buttons and key codes, and takes full-screen screenshots via
+<code>Robot.createScreenCapture</code>. There is no separate "agent decision" process involved in any single call
+&mdash; <code>glide</code>, <code>click</code>, <code>drag</code>, <code>chord</code> and <code>shot</code> are all
+synchronous Java method calls that return once the OS has processed the input event. The published guide describes a
+richer design (a <code>Desk</code> interface with two backends, <code>Awt</code> and a <code>Mutter</code> one that
+drives GNOME's <code>org.gnome.Mutter.RemoteDesktop</code>/<code>ScreenCast</code> D-Bus session instead of X11
+<code>Robot</code> input) plus a <code>Pilot.type</code> method for arbitrary text. That richer version exists only
+on the fork branch <code>marcoautomation2/Controllers@agenttools-typing-guide</code> and was never merged upstream:
+the code actually checked into <code>FearlessLang/Controllers</code>, and therefore into every
+<code>fearlessBranch*</code> working copy on this machine, is the plain <code>Robot</code>-only <code>Pilot</code>
+shown above, with no <code>Desk</code>/<code>Mutter</code> abstraction and no <code>type</code>. This machine's own
+<code>gui_gym.txt</code> describes the Mutter mechanism as if it is what <code>Pilot</code> currently does, which is
+the one genuinely stale piece of documentation behind the original confusion &mdash; worth a housekeeping pass
+separate from this task.</p>
+<p><strong>The granularity.</strong> Nothing requires a fresh model decision per <code>Pilot</code> call. A whole
+sequence of clicks, drags and key chords can be, and in this task was, written out as one deterministic Java
+method and run start to finish with no LLM in the loop &mdash; that is exactly what "auto mode" below is. What does
+need a decision each time is <em>where things are</em>: window placement is the window manager's, not the caller's,
+so the coordinates a script plays back have to come from somewhere. The two ways to get them are (a) an agent
+looking at a screenshot once, deciding the next click, and recording the pixel position it used &mdash; "manual
+mode" &mdash; or (b) <code>Pilot.changed</code>, which finds the bounding box of what changed between two
+screenshots (e.g. radius 6 to find a newly-opened window's edges while ignoring incidental redraws), letting a script
+locate a window without hard-coding its position. This task's scripts use recorded fixed coordinates (approach a),
+which is simpler but ties a script to one screen layout; a natural next step for any of them would be to swap in
+<code>Pilot.changed</code> lookups for the couple of coordinates that are layout-sensitive (the project tiles).</p>
+
+<h2>What was built</h2>
+<p>Of the 9 tests in <code>fearlessManagerAutomatedGuiTests/allTests.txt</code>, 3 were taken through the full
+manual-then-auto pipeline: <strong>TEST 3</strong> (Compile and run), <strong>TEST 5</strong> (Running program and
+Terminate) and <strong>TEST 9</strong> (Recompile after Clear cache). TEST 1 (file association) and TEST 6 (window
+close vs Quit) were deliberately skipped: a prior overnight run on this same machine
+(<code>overnightLogs/2026-09-13-full-test-run/log.md</code>) found a real product bug in TEST 1 (the file-manager
+icon is installed under a hicolor directory name &mdash; the source PNG's raw pixel size &mdash; that the icon
+theme's <code>index.theme</code> never declares, so it never renders) and a desktop-focus/window-remapping quirk in
+TEST 6 specific to this synthetic remote-controlled desktop. Automating either now would produce a script that fails
+for reasons that have nothing to do with whether the harness itself works.</p>
+
+<h3>The workflow, concretely</h3>
+<ol>
+<li><strong>Manual mode.</strong> Launched the built Fearless Manager app image, then drove it click by click with a
+small scratch <code>Pilot</code>-backed CLI, deciding each next action from a screenshot. Every click's pixel
+position, every wait, and what was checked at each step (both visually and against the manager's own on-disk
+state) was logged as JSON.</li>
+<li><strong>Auto mode.</strong> For each test, wrote one single-file Java program &mdash; same
+no-separate-compile-step style as <code>Coordinator/Build/src/scripts/*.java</code> &mdash; that replays the exact
+recorded clicks through <code>Pilot</code>, then verifies the outcome. The Fearless Manager turned out to persist
+rich per-project state on disk (<code>fearless0_001/eclipse/&lt;project&gt;/state.txt</code>, a small JSON blob with
+<code>needsCompiling</code>, <code>running</code>, <code>runs</code>, <code>exit</code>, <code>mains</code>, and
+<code>console.txt</code>, the exact text the output pane shows), so every check in all 3 scripts reads those files
+instead of taking a screenshot and reasoning about pixels &mdash; no vision needed at verification time at all.</li>
+<li><strong>Run twice.</strong> Each of the 3 programs was executed twice back to back on the real desktop. All 6
+runs passed. No leaked child process or window was left behind by either TEST 5 run (its subject app never exits on
+its own; Terminate is the entire point of the test).</li>
+</ol>
+
+<h3>Results</h3>
+<table>
+<tr><th>Test</th><th>Run 1</th><th>Run 2</th><th>What it checks</th></tr>
+<tr><td>TEST 3 Compile and run</td><td><span class="badge pass">PASS</span></td><td><span class="badge pass">PASS</span></td>
+<td>state.txt after compile+run: exit 0, lastRun hello.Hello6, runs incremented by exactly 5; console.txt tail
+matches the exact 5-block sequence (Err-hole for the variable "after Ns" timing).</td></tr>
+<tr><td>TEST 5 Running program and Terminate</td><td><span class="badge pass">PASS</span></td><td><span class="badge pass">PASS</span></td>
+<td>state.txt after Terminate: exit 143, running empty; console.txt tail matches running/terminating/exited exactly;
+confirmed via <code>ps</code> that no gui_example.Foo process survives either run.</td></tr>
+<tr><td>TEST 9 Recompile after Clear cache</td><td><span class="badge pass">PASS</span></td><td><span class="badge pass">PASS</span></td>
+<td>state.txt right after Clear cache: needsCompiling true, mains empty; after Compile: needsCompiling false, all 5
+mains present, exactly one new "compile done" block appended to console.txt.</td></tr>
+</table>
+
+<h2>Brittleness, honestly</h2>
+<ul>
+<li><strong>Fixed pixel coordinates.</strong> Every click point (project tiles, the Compile/Run/Terminate button
+that changes label and width but keeps the same top-left anchor, the Project and Running menus and their items) is a
+literal number recorded once on this machine's current screen resolution and window layout. A different screen
+size, a maximized-vs-not window, or a third project tile shifting the grid would all silently break these scripts
+&mdash; they would click the wrong thing rather than fail cleanly.</li>
+<li><strong>Tile position depends on how many/which projects are registered.</strong> Tiles are laid out
+alphabetically; these scripts assume exactly <code>gui_basics</code> and <code>hello_world</code> are registered,
+in that left-to-right order. This is why "Add folder" was deliberately left out of scope for now (see below), not
+because it can't be scripted at all.</li>
+<li><strong>Timing.</strong> Compiles and runs of these tiny fixture projects are consistently fast (under a couple
+of seconds) in this environment, so generous fixed timeouts (5&ndash;15s) were enough in all 6 runs with no
+retries needed. A slower machine or a bigger fixture project would need larger timeouts, not a different design.</li>
+<li><strong>What is deliberately not automated.</strong> The "Add a Fearless project folder" file-chooser dialog: a
+prior session found that typing an absolute path into it and pressing Enter/Open silently does nothing, and the
+only reliable way to add a folder is to navigate the list view visually. That is exactly the kind of step that
+still needs a human-shaped (agent-shaped) decision per click, so these 3 scripts instead assume the two fixture
+projects are already registered, which they are on this machine from the prior manual run.</li>
+</ul>
+
+<h2>The intended failure-triage workflow</h2>
+<p>These auto-mode scripts are expected to go stale over time (a UI tweak, a resolution change, a new project tile)
+&mdash; that is an accepted tradeoff, not a flaw, because regenerating one is cheap. The workflow going forward,
+entirely agent-driven, no human required:</p>
+<ol>
+<li>An auto-mode script fails (assertion error, timeout, or a click landing on the wrong control).</li>
+<li>An agent re-runs the same test in manual mode: launch the app, screenshot, decide each click again from what is
+actually on screen right now, log the new coordinates and observations exactly as this task did.</li>
+<li>Compare: if the manual run's *outcome* (the state.txt/console.txt content, the actual application behavior)
+matches what the old auto-mode script expected, only the coordinates or timing drifted &mdash; regenerate the
+auto-mode script from the new manual log. That is brittleness, not a bug.</li>
+<li>If the manual run's outcome itself differs from what allTests.txt or the previous manual log says should happen,
+that is a real regression worth reporting, independent of any auto-mode script.</li>
+</ol>
+
+<h2>Links</h2>
+<ul>
+<li>Auto-mode programs (PR): <a href="https://github.com/MarcoServetto/AgentsCoordination/pull/12">MarcoServetto/AgentsCoordination#12</a></li>
+<li>agentTools guide referenced above: <a href="https://marcoautomation2.github.io/Controllers/">marcoautomation2.github.io/Controllers</a></li>
+<li>Prior full manual test run this harness builds on: <a href="linuxresults.html">linuxresults.html</a></li>
+</ul>
+
+<footer>
+Written by an autonomous Claude Sonnet 5 agent running overnight on a dedicated machine, driving the real desktop
+described above.
+</footer>
+
+</main>
+</body>
+</html>
