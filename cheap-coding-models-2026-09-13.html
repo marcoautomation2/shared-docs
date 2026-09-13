@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cheap coding-model APIs for harness testing &mdash; 2026-09-13</title>
+<style>
+  :root {
+    --bg: #faf9f7;
+    --surface: #ffffff;
+    --text: #1c1a17;
+    --muted: #6b6459;
+    --accent: #a8531e;
+    --border: #e6e1d8;
+    --pass-bg: #e9f5e9;
+    --pass-text: #1e6b2c;
+    --warn-bg: #fff3d9;
+    --warn-text: #8a5a00;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #17140f;
+      --surface: #201c16;
+      --text: #f1ede4;
+      --muted: #a89f8f;
+      --accent: #e08a4f;
+      --border: #332d23;
+      --pass-bg: #163420;
+      --pass-text: #7fd696;
+      --warn-bg: #3a2d10;
+      --warn-text: #f0c05f;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: ui-sans-serif, system-ui, "Segoe UI", Helvetica, Arial, sans-serif;
+    line-height: 1.55;
+  }
+  main {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 4rem 1.5rem 6rem;
+  }
+  a { color: var(--accent); }
+  h1 {
+    font-size: 1.75rem;
+    margin: 0 0 0.4rem;
+    letter-spacing: -0.01em;
+  }
+  p.lede {
+    color: var(--muted);
+    margin: 0 0 2rem;
+  }
+  .backlink {
+    display: inline-block;
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+    color: var(--muted);
+    text-decoration: none;
+  }
+  .backlink:hover { color: var(--accent); }
+  h2 {
+    font-size: 1.15rem;
+    margin: 2.6rem 0 1rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid var(--border);
+  }
+  h3 {
+    font-size: 1rem;
+    margin: 1.6rem 0 0.5rem;
+  }
+  .recbox {
+    background: var(--pass-bg);
+    color: var(--pass-text);
+    border-radius: 10px;
+    padding: 1.2rem 1.4rem;
+    margin: 0.5rem 0 1rem;
+  }
+  .recbox h3 { color: var(--pass-text); margin-top: 0; }
+  .recbox p { color: var(--pass-text); }
+  .warnbox {
+    background: var(--warn-bg);
+    color: var(--warn-text);
+    border-radius: 10px;
+    padding: 1rem 1.3rem;
+    margin: 1rem 0;
+    font-size: 0.95rem;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0 1.5rem;
+    font-size: 0.92rem;
+  }
+  th, td {
+    text-align: left;
+    padding: 0.55rem 0.7rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  th {
+    color: var(--muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.04em;
+  }
+  code {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 0.1rem 0.35rem;
+    font-size: 0.9em;
+  }
+  ul, ol { padding-left: 1.3rem; }
+  li { margin-bottom: 0.4rem; }
+  .tag {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    margin-left: 0.4rem;
+  }
+  footer {
+    margin-top: 3rem;
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<main>
+  <a class="backlink" href="./index.html">&larr; Shared documents</a>
+  <h1>Cheap coding-model APIs for harness testing</h1>
+  <p class="lede">Survey of per-token pricing and free/no-card options across model
+  providers, for prototyping a home-grown agentic coding harness against raw
+  APIs (not Claude Code itself). Researched overnight, 2026-09-13.</p>
+
+  <div class="warnbox">
+    Context: Anthropic's Claude Code Pro/Max subscription credentials only
+    work inside Claude Code / claude.ai (enforced server-side since April
+    2026). A custom harness needs either a metered Anthropic API key
+    (requires a card) or one of the alternatives below.
+  </div>
+
+  <h2>Recommendation</h2>
+
+  <div class="recbox">
+    <h3>1. OpenRouter &mdash; free-tier hosted models <span class="tag">no card</span></h3>
+    <p>One signup, one OpenAI-compatible API key and endpoint, 20+ rotating
+    <code>:free</code> models (Qwen, DeepSeek, Llama, GLM, and others) behind
+    it. 50 requests/day and 20 requests/minute on a $0 balance &mdash; enough
+    to exercise a harness's tool-call loop, retries, and streaming against a
+    real hosted model without spending anything. Because it's a single
+    OpenAI-compatible shape, it is also the fastest way to check whether a
+    harness's abstractions actually generalize across model families.
+    Optional manual step: buying $10 of credit (Marco's card) raises the
+    daily cap to 1,000 &mdash; not required to start.</p>
+  </div>
+
+  <div class="recbox">
+    <h3>2. Local Ollama, <code>qwen2.5-coder:3b</code> <span class="tag">free forever, already installed</span></h3>
+    <p>Already running on this machine (re-pulled tonight after a prior
+    reset wiped the model cache &mdash; see log). Zero cost, zero account,
+    no rate limit, no network dependency. CPU-only inference is slow
+    (seconds per reply, no GPU on this box) and a 3B model's code quality is
+    well below any hosted option below, so treat it as a target for
+    exercising the harness's plumbing (request/response shape, tool-call
+    loop, error handling), not for judging real code quality.</p>
+  </div>
+
+  <p>Runner-up: <strong>GitHub Models</strong>. The marcoautomation2 GitHub
+  token already in use on this machine works against it today with zero new
+  signup, and its GPT-4o/Claude/Llama/Phi lineup is explicitly scoped by
+  GitHub's own terms to prototyping and experimentation &mdash; a close match
+  for "testing a harness." Listed second only because its per-model rate
+  limits are tighter and less clearly documented than OpenRouter's.</p>
+
+  <h2>Free / no-card options in more detail</h2>
+  <table>
+    <tr><th>Provider</th><th>Free access</th><th>Limits</th><th>Card needed</th></tr>
+    <tr><td>OpenRouter (aggregator)</td><td>20+ rotating <code>:free</code> models</td><td>50 req/day, 20 req/min ($0 balance); 1,000/day after a $10 top-up</td><td>No</td></tr>
+    <tr><td>GitHub Models</td><td>GPT-4o, Claude, Llama, Phi via existing GitHub identity</td><td>~10-15 req/min, ~50-150 req/day depending on model; prototyping-only ToS</td><td>No (uses existing GitHub account)</td></tr>
+    <tr><td>Google Gemini</td><td>Flash &amp; Flash-Lite tiers free at API level</td><td>Rate-limited; free-tier prompts may be used to improve Google's products</td><td>No</td></tr>
+    <tr><td>Groq</td><td>Self-serve catalog (GPT-OSS-20B/120B)</td><td>~20-30 req/min, ~14,400 req/day</td><td>No (card raises limits ~10x, optional)</td></tr>
+    <tr><td>Cerebras</td><td>Llama 3.1 8B, Qwen3-235B, GPT-OSS-120B</td><td>~1M tokens/day, ~20-30 req/min</td><td>No</td></tr>
+    <tr><td>DeepSeek</td><td>Reported ~5M free tokens on signup</td><td>Not independently confirmed on DeepSeek's own pricing page</td><td>Unconfirmed</td></tr>
+    <tr><td>Alibaba Qwen (Singapore endpoint)</td><td>Reported 1M free tokens per model, 90 days</td><td>Singapore endpoint only; discontinued elsewhere in April 2026</td><td>No</td></tr>
+    <tr><td>Local Ollama</td><td>Any model that fits in RAM (this machine: 14 GiB, no GPU)</td><td>None &mdash; CPU inference speed is the limit</td><td>No</td></tr>
+  </table>
+
+  <h2>Cheapest paid per-token pricing, for reference</h2>
+  <p>If a genuine flagship-adjacent small model is wanted rather than
+  whatever a free tier happens to route to, ordered by $/MTok
+  (input/output), confirmed against each provider's own pricing page except
+  where noted:</p>
+  <table>
+    <tr><th>Provider / model</th><th>Input $/MTok</th><th>Output $/MTok</th><th>Notes</th></tr>
+    <tr><td>DeepSeek-V4.1-Flash</td><td>0.003&ndash;0.15 (cache hit/miss, off-peak)</td><td>0.60</td><td>Peak hours (weekday UTC mornings) double these rates</td></tr>
+    <tr><td>OpenAI gpt-5-nano</td><td>0.05</td><td>0.40</td><td>Cheapest OpenAI model; no free trial credit as of 2026</td></tr>
+    <tr><td>Groq GPT-OSS-20B</td><td>0.075</td><td>0.30</td><td>Self-serve catalog narrowed to 2 models in Sept 2026</td></tr>
+    <tr><td>Google Gemini 3.1 Flash-Lite</td><td>0.25 (or free-tier)</td><td>1.50</td><td>Free at API level, rate-limited, with product-improvement data use</td></tr>
+    <tr><td>Alibaba Qwen3.8-Flash</td><td>0.14</td><td>0.42</td><td>Singapore endpoint; not independently re-verified</td></tr>
+    <tr><td>Mistral Codestral</td><td>0.30</td><td>0.90</td><td>Code-specialist model; free "Experiment" tier also covers it</td></tr>
+    <tr><td>Anthropic Claude Haiku 4.5</td><td>1.00</td><td>5.00</td><td>Cheapest current Anthropic model; no free tier</td></tr>
+  </table>
+
+  <h2>What Marco would need to do by hand</h2>
+  <ul>
+    <li>Nothing, to start testing today: OpenRouter signup and the local
+    Ollama model need no card and no manual verification.</li>
+    <li>To raise OpenRouter's daily cap from 50 to 1,000 requests: add $10
+    of credit at openrouter.ai (his card).</li>
+    <li>To use any of the paid-only options in the pricing table above
+    (Anthropic, OpenAI, Groq beyond the free catalog, Gemini beyond the
+    free tier, DeepSeek, Qwen beyond its free quota): create an account and
+    add a payment method at that provider's own console
+    (console.anthropic.com, platform.openai.com, ai.google.dev / Google
+    Cloud console, platform.deepseek.com, console.groq.com,
+    dashscope console). None of this was done automatically &mdash; entering
+    payment details is explicitly outside what an overnight agent does on
+    its own.</li>
+  </ul>
+
+  <h2>Method &amp; confidence</h2>
+  <p>Pricing and free-tier terms for Anthropic, OpenAI, Google Gemini,
+  DeepSeek, and OpenRouter were confirmed directly against each provider's
+  own documentation. Groq, Cerebras, Alibaba Qwen, Mistral, and GitHub
+  Models are cross-checked across multiple independent secondary sources
+  but not independently re-verified against a primary console/docs page in
+  this pass &mdash; flagged above wherever that applies. The web currently
+  carries many near-identical SEO aggregator pages restating the same
+  numbers per provider; these were treated collectively as one weak source
+  even when several agreed, and a primary source was preferred whenever it
+  could be fetched.</p>
+
+  <footer>Compiled by a linux3 overnight research sub-agent. Full research
+  log kept machine-local (not published) at
+  /data/fearlessBranch3/overnightLogs/2026-09-13-cheap-model-research/log.md.</footer>
+</main>
+</body>
+</html>
