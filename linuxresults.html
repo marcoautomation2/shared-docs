@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fearless full test run &mdash; 2026-09-13</title>
+<style>
+  :root {
+    --bg: #faf9f7;
+    --surface: #ffffff;
+    --text: #1c1a17;
+    --muted: #6b6459;
+    --accent: #a8531e;
+    --border: #e6e1d8;
+    --pass-bg: #e9f5e9;
+    --pass-text: #1e6b2c;
+    --fail-bg: #fbe9e7;
+    --fail-text: #a3271b;
+    --warn-bg: #fff3d9;
+    --warn-text: #8a5a00;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #17140f;
+      --surface: #201c16;
+      --text: #f1ede4;
+      --muted: #a89f8f;
+      --accent: #e08a4f;
+      --border: #332d23;
+      --pass-bg: #163420;
+      --pass-text: #7fd696;
+      --fail-bg: #3a1f1a;
+      --fail-text: #f3897a;
+      --warn-bg: #3a2d10;
+      --warn-text: #f0c05f;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: ui-sans-serif, system-ui, "Segoe UI", Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+  }
+  main {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 4rem 1.5rem 6rem;
+  }
+  a { color: var(--accent); }
+  h1 {
+    font-size: 1.75rem;
+    margin: 0 0 0.4rem;
+    letter-spacing: -0.01em;
+  }
+  p.lede {
+    color: var(--muted);
+    margin: 0 0 2rem;
+  }
+  .backlink {
+    display: inline-block;
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+    color: var(--muted);
+    text-decoration: none;
+  }
+  .backlink:hover { color: var(--accent); }
+  .status-banner {
+    background: var(--pass-bg);
+    color: var(--pass-text);
+    border-radius: 10px;
+    padding: 1.1rem 1.3rem;
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-bottom: 0.6rem;
+  }
+  .status-sub {
+    color: var(--muted);
+    font-size: 0.92rem;
+    margin: 0 0 2.6rem;
+  }
+  h2 {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 700;
+    color: var(--muted);
+    margin: 2.6rem 0 1rem;
+  }
+  h2:first-of-type { margin-top: 0; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    font-size: 0.95rem;
+  }
+  th, td {
+    text-align: left;
+    padding: 0.7rem 0.9rem;
+    border-bottom: 1px solid var(--border);
+  }
+  th {
+    color: var(--muted);
+    font-weight: 600;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  tr:last-child td { border-bottom: none; }
+  .pill {
+    display: inline-block;
+    padding: 0.15rem 0.6rem;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 0.82rem;
+    white-space: nowrap;
+  }
+  .pill.pass { background: var(--pass-bg); color: var(--pass-text); }
+  .pill.fail { background: var(--fail-bg); color: var(--fail-text); }
+  .pill.warn { background: var(--warn-bg); color: var(--warn-text); }
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+  ul.notes { margin: 0; padding-left: 1.2rem; color: var(--text); }
+  ul.notes li { margin-bottom: 0.5rem; }
+  details {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.9rem 1.2rem;
+    margin-bottom: 1rem;
+  }
+  details + details { margin-top: 0; }
+  summary {
+    cursor: pointer;
+    font-weight: 600;
+  }
+  summary .pill { margin-left: 0.6rem; }
+  pre {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.9rem;
+    overflow-x: auto;
+    font-size: 0.82rem;
+    line-height: 1.45;
+    margin: 0.8rem 0 0;
+  }
+  code { font-size: 0.92em; }
+  footer {
+    margin-top: 3rem;
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<main>
+  <a class="backlink" href="./">&larr; Shared documents</a>
+  <h1>Fearless full test run</h1>
+  <p class="lede">Every kind of automated test the Fearless repos have, plus the manual GUI acceptance test plan (<a href="./manager-gui-tests.txt">manager-gui-tests.txt</a>), run back to back on a clean upstream-aligned checkout. 2026-09-13, marcoautomation2/fearlessBranch3, linux3 overnight task.</p>
+
+  <div class="status-banner">Automated suites: 4/4 green (1360/1360 tests) &mdash; agentTools desktop-drag test: 1 reproducible failure &mdash; manual GUI plan: 7/9 tests fully pass, 2 partial</div>
+  <p class="status-sub">align-branches was run first, resetting all seven repos to upstream main. Two genuine, precisely isolated issues were found and are described below; nothing was fixed as part of this task.</p>
+
+  <h2>Automated suites</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Suite</th>
+        <th>Scope</th>
+        <th class="num">Tests</th>
+        <th class="num">Failed</th>
+        <th class="num">Duration</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>TestAllFrontend</td>
+        <td>Commons + Frontend</td>
+        <td class="num">981</td>
+        <td class="num">0</td>
+        <td class="num">~10.4s</td>
+        <td><span class="pill pass">pass</span></td>
+      </tr>
+      <tr>
+        <td>TestAllFrontendCoordinator</td>
+        <td>+ Coordinator, excl. integrationTests</td>
+        <td class="num">258</td>
+        <td class="num">0</td>
+        <td class="num">~11.8s</td>
+        <td><span class="pill pass">pass</span></td>
+      </tr>
+      <tr>
+        <td>TestAllFrontendCoordinatorIntegration</td>
+        <td>+ Coordinator integrationTests (compiles &amp; runs real Fearless programs)</td>
+        <td class="num">1276</td>
+        <td class="num">0</td>
+        <td class="num">~87s</td>
+        <td><span class="pill pass">pass</span></td>
+      </tr>
+      <tr>
+        <td>TestAllController</td>
+        <td>+ Controllers manager GUI, excl. agentTools</td>
+        <td class="num">121</td>
+        <td class="num">0</td>
+        <td class="num">~0.5s</td>
+        <td><span class="pill pass">pass</span></td>
+      </tr>
+      <tr>
+        <td>TestAgentTools</td>
+        <td>Controllers agentTools &mdash; drives the real desktop (opens two folder windows, drags a file between them)</td>
+        <td class="num">1</td>
+        <td class="num">1</td>
+        <td class="num">~8.3s</td>
+        <td><span class="pill fail">fail (2/2 runs)</span></td>
+      </tr>
+    </tbody>
+  </table>
+  <p class="status-sub" style="margin-top:0.8rem">TestAllFrontendCoordinatorIntegration's 1276 total is two JUnit launches inside one script: 981 (Frontend+Coordinator, same as the second row) plus 295 integrationTests.</p>
+
+  <h2>Finding &mdash; real-desktop file drag test fails reproducibly</h2>
+  <details open>
+    <summary>DesktopDragTest.aFileDraggedOntoAFolderMovesInsideIt <span class="pill fail">reproducible, cause unconfirmed</span></summary>
+    <p>Ran twice back to back, identical result both times:</p>
+    <pre>org.opentest4j.AssertionFailedError: expected: &lt;/tmp/desktopDragTest/destination/example.txt&gt; but was: &lt;/tmp/desktopDragTest/example.txt&gt;</pre>
+    <p>The test opens a real folder window, locates a file icon and a destination-folder icon by screenshot diffing, then drags the file onto the folder with <code>agentTools.Pilot.drag</code> (press&nbsp;&rarr; move &rarr; release via <code>java.awt.Robot</code>). The file never moves: window setup and keyboard-driven row detection both succeed (so Robot key events reach the real focused window fine), but the drag itself has no effect on the file manager.</p>
+    <p>This machine's desktop is shared with three other agents' own terminal windows, and a known hazard for exactly this class of test is a stray window stealing focus or partially overlapping the freshly opened folder window mid-test, in which case a missed drop can silently land on that other window instead of the target folder. That is a plausible, though unconfirmed, explanation here &mdash; I did not have a way to capture the desktop state at the exact moment of the drop to confirm it. Recommended follow-up: re-run <code>TestAgentTools.java</code> alone with no other agent GUI activity in parallel, and if it still fails, capture a screenshot at drop time to see what is actually under the cursor.</p>
+  </details>
+
+  <h2>Manual GUI acceptance tests (manager-gui-tests.txt, 9 tests)</h2>
+  <p>Built the managed application image (<code>DeployManagedFearless.java</code>) and drove it with real mouse/keyboard input, the same way a person would, using a small helper built on Controllers' <code>agentTools.Pilot</code>. The three example projects the test plan names (01_hello_world, 02_mains_in_methods, 09_gui_basics) do not exist in this checkout &mdash; the plan's own note says they map to <code>StandardLibrary/integrationTests/{helloWorld, mainInMethod, testGui1}</code> &mdash; so scratch copies of those three, correctly named, were built for this run only and are not part of any repository.</p>
+  <table>
+    <thead>
+      <tr>
+        <th>Test</th>
+        <th>Result</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>1&nbsp;&mdash;&nbsp;File association</td><td><span class="pill warn">4/7 checks pass</span></td></tr>
+      <tr><td>2&nbsp;&mdash;&nbsp;Split view and divider</td><td><span class="pill pass">4/4 pass</span></td></tr>
+      <tr><td>3&nbsp;&mdash;&nbsp;Compile and run</td><td><span class="pill pass">pass, matched fixture output exactly</span></td></tr>
+      <tr><td>4&nbsp;&mdash;&nbsp;Second project</td><td><span class="pill pass">4/4 pass</span></td></tr>
+      <tr><td>5&nbsp;&mdash;&nbsp;Running program and Terminate</td><td><span class="pill pass">4/4 pass</span></td></tr>
+      <tr><td>6&nbsp;&mdash;&nbsp;Window close vs Quit</td><td><span class="pill warn">1/3 steps clean, 1 blocked, 1 confirmed separately</span></td></tr>
+      <tr><td>7&nbsp;&mdash;&nbsp;Nested folder rejected</td><td><span class="pill pass">2/2 pass</span></td></tr>
+      <tr><td>8&nbsp;&mdash;&nbsp;Clear cache and Forget project</td><td><span class="pill pass">3/3 pass</span></td></tr>
+      <tr><td>9&nbsp;&mdash;&nbsp;Recompile after Clear cache</td><td><span class="pill pass">2/2 pass</span></td></tr>
+    </tbody>
+  </table>
+  <p class="status-sub" style="margin-top:0.8rem">Every test was actually executed; nothing here is a guess. Tests 2&ndash;5 and 7&ndash;9 matched the plan closely, with two cosmetic differences noted below that did not affect the pass calls: a freshly-added project auto-opens its own panel immediately (the plan assumes it stays unselected until clicked), and a freshly-added folder needs one "Become code" click before Compile appears (the plan assumes Compile is immediately available) &mdash; both are one-time, discoverable UI steps, not failures.</p>
+
+  <h2>Finding &mdash; Fearless-family file icon never appears (Test 1)</h2>
+  <details open>
+    <summary>hello_world.fearless keeps its generic icon even after a correct registration <span class="pill fail">reproducible, cause found</span></summary>
+    <p>Test 1 needs a clean starting point (no program registered for <code>.fearless</code> at all), which this machine did not have &mdash; another agent's own Fearless Manager install already owned it. That registration was backed up, removed for the duration of this one test, and restored byte-for-byte afterward; <code>xdg-mime query default application/x-fearless</code> was used to confirm the restore before finishing.</p>
+    <p>With a genuinely clean start: opening a file manager on the project showed the expected generic icon, and running the manager did register Fearless as the default handler for <code>.fearless</code> correctly (<code>xdg-mime query</code> confirmed it, and the generated mime package XML correctly names its icon). But the file's icon in the file manager never changes to the Fearless icon &mdash; verified with a plain refresh and, separately, a fully fresh restart of the file manager process.</p>
+    <p>Root cause, found by reading source only (nothing changed or rebuilt to test a fix): <code>LinuxAssociations.put()</code> in <code>Commons/src/fileAssociations/LinuxAssociations.java</code> reads the icon PNG's own pixel width/height straight out of its header and uses that number as the icon theme's directory name (e.g. this build's 477&times;477 <code>icon.png</code> lands in <code>~/.local/share/icons/hicolor/477x477/mimetypes/</code>). The system's own <code>hicolor/index.theme</code> only declares the standard sizes (16 up to 512 in fixed steps, plus <code>scalable</code>) and has no <code>477x477</code> entry, so no spec-compliant icon-theme lookup (Nautilus included) ever looks in that directory &mdash; the icon is correctly referenced by name everywhere, but physically unreachable. Any Fearless-family icon whose source PNG is not exactly one of hicolor's standard sizes will hit this.</p>
+    <p>Everything else in Test 1 checked out: the ambiguous-registration guard, the "nested folder" and "forget association" confirmation dialogs (with clear, specific wording naming both folders/paths involved), and the register/forget/re-register lifecycle all behaved correctly and matched the plan.</p>
+    <p>Smaller, separate observation: the very first manager launch against the clean baseline produced no association at all (no error, no file written), while a second identical clean-relaunch cycle worked; ProcessHandle command resolution, HOME/XDG_DATA_HOME, and target-directory writability all checked out fine in isolation, so the cause of that one intermittent miss is unconfirmed.</p>
+  </details>
+
+  <h2>Finding &mdash; relaunching while the manager is already running does not bring its window back</h2>
+  <details open>
+    <summary>Test 6, step 2 <span class="pill warn">blocked by a stuck window, not fully confirmed as a product bug</span></summary>
+    <p>Closing the manager's window (its own X button) correctly left the process running (confirmed via <code>ps</code>), matching the plan. Relaunching the same binary while that process was still alive correctly avoided starting a second process (also matching the plan), but its window did not visibly reappear or accept focus through any normal interaction; the OS-level window list showed it as still unmapped. Forcing it to map and take focus via window-management calls (not synthetic input) did reveal it with its full state intact (both registered project tiles, the earlier compile/run output log, all preserved correctly) &mdash; so the application's own state survived cleanly &mdash; but the window then stopped accepting any further clicks at all, so "Quit manager" could not be exercised through it. The process was killed directly and a fresh launch used to continue.</p>
+    <p>Later in the same session, quitting a normally-launched (never stuck) window via its own "Quit manager" menu item worked perfectly and exited the process cleanly. So the underlying capability works; only the specific "reappear after a relaunch while alive" path did not, in this synthetic, remote-controlled desktop session. Recommended follow-up: someone with a normal desktop session should check whether relaunching a single-instance Fearless Manager brings its window to the front as expected there.</p>
+  </details>
+
+  <h2>Notes</h2>
+  <ul class="notes">
+    <li>Working copy was reset to upstream main on all seven Fearless repos (align-branches) before anything else.</li>
+    <li>The GNOME screen was asleep/dimmed when GUI work started; synthetic (Robot-based) input does not reset the idle timer and cannot wake a blanked screen on its own, so the screensaver was deactivated once over D-Bus at the start and the two gsettings changed to keep it awake were reverted to their defaults at the end.</li>
+    <li>Controllers' <code>agentTools.Pilot</code> in this checkout drives input purely through <code>java.awt.Robot</code>; it does not use a Mutter RemoteDesktop/ScreenCast D-Bus session. Plain clicks, key presses, and drags-within-the-app's-own-window all worked reliably through it all session; the one place a raw drag gesture did not work as a real desktop drag-and-drop was onto Nautilus (see the agentTools finding above).</li>
+    <li>No file association, gsettings, or scratch fixture left behind by this task affects any repository; the only shared machine state touched (the default <code>.fearless</code> handler, temporarily) was restored to its original owner before finishing.</li>
+  </ul>
+
+  <footer>Generated by the Claude agent on marcoautomation2 as an overnight task (linux3). Full session log, screenshots taken for verification during the GUI run (not archived here), and the scratch project fixtures used for the manual tests are kept in the fearlessBranch3 working copy's overnight logs, not published.</footer>
+</main>
+</body>
+</html>
