@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Linux tray icon: why StatusNotifierItem, not XEmbed &mdash; 2026-09-15</title>
+<style>
+  :root {
+    --bg: #faf9f7;
+    --surface: #ffffff;
+    --text: #1c1a17;
+    --muted: #6b6459;
+    --accent: #a8531e;
+    --border: #e6e1d8;
+    --pass-bg: #e9f5e9;
+    --pass-text: #1e6b2c;
+    --warn-bg: #fff3d9;
+    --warn-text: #8a5a00;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #17140f;
+      --surface: #201c16;
+      --text: #f1ede4;
+      --muted: #a89f8f;
+      --accent: #e08a4f;
+      --border: #332d23;
+      --pass-bg: #163420;
+      --pass-text: #7fd696;
+      --warn-bg: #3a2d10;
+      --warn-text: #f0c05f;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: ui-sans-serif, system-ui, "Segoe UI", Helvetica, Arial, sans-serif;
+    line-height: 1.55;
+  }
+  main {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 4rem 1.5rem 6rem;
+  }
+  a { color: var(--accent); }
+  h1 {
+    font-size: 1.75rem;
+    margin: 0 0 0.4rem;
+    letter-spacing: -0.01em;
+  }
+  p.lede {
+    color: var(--muted);
+    margin: 0 0 2rem;
+  }
+  .backlink {
+    display: inline-block;
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+    color: var(--muted);
+    text-decoration: none;
+  }
+  .backlink:hover { color: var(--accent); }
+  h2 {
+    font-size: 1.15rem;
+    margin: 2.6rem 0 1rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid var(--border);
+  }
+  h3 {
+    font-size: 1rem;
+    margin: 1.6rem 0 0.5rem;
+  }
+  .recbox {
+    background: var(--pass-bg);
+    color: var(--pass-text);
+    border-radius: 10px;
+    padding: 1.2rem 1.4rem;
+    margin: 0.5rem 0 1rem;
+  }
+  .recbox h3 { color: var(--pass-text); margin-top: 0; }
+  .recbox p { color: var(--pass-text); margin-bottom: 0; }
+  .warnbox {
+    background: var(--warn-bg);
+    color: var(--warn-text);
+    border-radius: 10px;
+    padding: 1rem 1.3rem;
+    margin: 1rem 0;
+    font-size: 0.95rem;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0 1.5rem;
+    font-size: 0.92rem;
+  }
+  th, td {
+    text-align: left;
+    padding: 0.55rem 0.7rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  th {
+    color: var(--muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.04em;
+  }
+  code {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 0.1rem 0.35rem;
+    font-size: 0.9em;
+  }
+  ul, ol { padding-left: 1.3rem; }
+  li { margin-bottom: 0.4rem; }
+  .tag {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    margin-left: 0.4rem;
+  }
+  footer {
+    margin-top: 3rem;
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<main>
+  <a class="backlink" href="./index.html">&larr; shared documents</a>
+  <h1>Linux tray icon: why StatusNotifierItem, not XEmbed</h1>
+  <p class="lede">Controllers <a href="https://github.com/FearlessLang/Controllers/pull/26">PR #26</a>
+  replaces the manager's AWT <code>TrayIcon</code> with a hand-written
+  StatusNotifierItem (SNI) D-Bus client on Linux. The question this
+  report answers: was that necessary, or could the old icon's clicks
+  have been fixed in place - and does the new approach risk quietly
+  hiding the icon instead of losing its clicks?</p>
+
+  <div class="recbox">
+    <h3>Short answer</h3>
+    <p>The click loss is a real, decade-old, upstream KDE bug in a proxy
+    binary Fearless does not own, with no known application-side fix -
+    the rewrite was the correct call, not scope creep. The "hidden
+    icons" worry is legitimate as a UX note but is not a regression:
+    the pre-PR icon already reached Plasma through the same SNI
+    exposure with the same <code>Status=Active</code> value. What is
+    still unverified is whether a click on real KDE hardware now
+    reaches the manager - the PR says so itself.</p>
+  </div>
+
+  <h2>1. The premise: does the old code get an icon onto a KDE tray?</h2>
+  <p>Yes, and the mechanism matters. KDE Plasma has not spoken the
+  legacy XEmbed systray protocol natively since the Plasma 5 era; its
+  panel widget only understands StatusNotifierItem. A compatibility
+  component, <code>xembedsniproxy</code> (part of
+  <a href="https://github.com/KDE/plasma-workspace/tree/master/xembed-sni-proxy"><code>plasma-workspace</code></a>),
+  is what lets any XEmbed app - including a Java <code>TrayIcon</code> -
+  show up at all: it embeds the app's tiny XEmbed window inside an
+  invisible container and re-announces that container to Plasma as an
+  SNI item. So "the icon appears" on KDE already depends on this proxy;
+  it was never native XEmbed rendering.</p>
+
+  <h2>2. Is the click loss a known bug, and is there a simpler fix?</h2>
+  <p>Read directly from KDE's own bug tracker and the proxy's current
+  source:</p>
+  <ul>
+    <li><a href="https://bugs.kde.org/show_bug.cgi?id=355504">KDE bug
+    355504</a>, "xembedsniproxy: java tray icon doesn't work" (2015).
+    A KDE developer's own comment explains the mechanism: the proxy
+    raises its transparent container to the top, moves it under the
+    pointer, injects one synthetic press/release pair into the embedded
+    window, then lowers the container again - "even user clicked twice,
+    that's 'two' single click, not 'double click'."</li>
+    <li><a href="https://bugs.kde.org/show_bug.cgi?id=356500">KDE bug
+    356500</a>, "xembedsniproxy icons doesn't respond to clicks" (2015).
+    A commenter reproduces it with a Java Swing app (JDownloader 2); the
+    proxy's own debug log labels the embedded window
+    <code>JavaEmbeddedFrame</code> and skips it as a "transparent xembed
+    icon."</li>
+    <li>Both reports were closed as duplicates of one another and
+    ultimately of bug 358328 ("no context menu"), with no comment in the
+    chain describing a fix that restores click delivery for
+    Java-created XEmbed windows.</li>
+    <li>Still reproducing a decade later: <a href="https://discuss.kde.org/t/java-awt-trayicon-stopped-working-on-kde-6-6-plasma/23922">a
+    KDE Discuss thread</a> from a user on Ubuntu 24.10 / Plasma 6.6 -
+    icon renders, a minimal <code>TrayIcon</code> + <code>MouseListener</code>
+    program receives zero click events, thread ends unanswered.</li>
+    <li>Reading <a href="https://github.com/KDE/plasma-workspace/blob/master/xembed-sni-proxy/sniproxy.cpp"><code>sniproxy.cpp</code></a>
+    directly: the click path auto-selects between a direct
+    <code>xcb_send_event</code> injection and an XTest fallback, and one
+    comment in the code notes it was specifically tuned against GTK's
+    quirks ("GTK doesn't like send_events and double checks the mouse
+    position matches where the window is"). No equivalent tuning for
+    Java AWT/Swing's embedded-frame windows is documented anywhere in
+    the file or the bug threads - consistent with those windows being
+    the ones that get silently skipped.</li>
+  </ul>
+  <p>No application-side workaround was found in any of these sources.
+  The only mitigation mentioned anywhere (toggling the KWin compositor
+  off and back on around the click) is a host-side manual step, not
+  something a shipped application can invoke or rely on, and is not
+  reported as reliable even then. The bug lives inside a C++ binary
+  Fearless does not ship; there is no Java API, system property, or
+  <code>TrayIcon</code> usage change that reaches into it.</p>
+
+  <h2>3. Does SNI risk hiding the icon that XEmbed didn't?</h2>
+  <p>The <a href="https://specifications.freedesktop.org/status-notifier-item/latest/status-notifier-item.html">StatusNotifierItem
+  spec</a> defines a <code>Status</code> property: <code>Passive</code>
+  ("likely that visualizations will choose to hide it"),
+  <code>Active</code> (shown), <code>NeedsAttention</code> (emphasized).
+  <code>gui.Sni</code> always reports <code>Active</code>.</p>
+  <p>The comparison that answers the regression question is what the
+  <em>old</em> code already reports. <code>sniproxy.cpp</code>'s own
+  <code>Status()</code> method:</p>
+  <pre><code>QString SNIProxy::Status() const
+{
+    return QStringLiteral("Active");
+}</code></pre>
+  <p>Unconditional, for every proxied XEmbed icon, Java's included. The
+  pre-PR AWT tray icon was therefore already being announced to Plasma
+  as an SNI item with <code>Status=Active</code> - the identical value
+  <code>gui.Sni</code> sets directly. PR #26 removes the proxy layer;
+  it does not change what Plasma is told about the icon's importance,
+  and so does not change its exposure to whatever visibility policy
+  Plasma applies to <code>Active</code> items.</p>
+  <p>That policy is real, though: <a href="https://userbase.kde.org/Plasma/SystemTray">KDE's
+  own System Tray documentation</a> describes the per-entry "Auto"
+  visibility setting as showing an icon "only ... when the service is
+  active" (mirroring the spec's Passive/Active split), and independent
+  user reports - e.g. an <a href="https://bbs.archlinux.org/viewtopic.php?id=223500">Arch
+  Linux forum thread</a> titled "Plasma application tray icons always
+  hidden on default Auto setting" - describe icons landing in the
+  collapsed "hidden icons" chevron on first appearance regardless of
+  nominal active status, needing a manual drag-out or a Visibility
+  &rarr; Shown override. No KDE document was found that pins down the
+  exact first-run placement rule (the Community wiki's
+  <a href="https://community.kde.org/Plasma/NewSystemTray">NewSystemTray</a>
+  design page covers categories and properties, not a first-appearance
+  algorithm) - this detail rests on consistent user testimony, not a
+  citable spec paragraph, and is flagged as such rather than overstated.</p>
+  <div class="warnbox">This is a generic, protocol-agnostic Plasma
+  behavior, and not unique to Linux: Windows 11's notification area has
+  shipped the same pattern since its redesign - newly-installed apps'
+  tray icons default to the hidden overflow drawer until dragged out
+  (a widely reported annoyance for apps like Discord or Google Drive
+  after a fresh install). It is standard tray-declutter UX in 2026, not
+  a fault introduced by choosing SNI over XEmbed.</div>
+
+  <h2>4. Is XEmbed a durable thing to invest in fixing?</h2>
+  <p>No. KDE Plasma has needed the XEmbed-to-SNI proxy since the
+  Plasma 5 era specifically because its panel only understands SNI now;
+  XEmbed survives purely as a compatibility shim maintained by the KDE
+  project, not a protocol Plasma implements natively. GNOME dropped its
+  built-in legacy tray outright and only regained one via the
+  AppIndicator/<code>ubuntu-appindicators</code> extension - itself an
+  SNI client, and the same extension the manager already targets on
+  GNOME. XFCE, Cinnamon and MATE speak SNI natively per the PR's own
+  description. Even a hypothetical fix for the XEmbed click bug would
+  only be patching a legacy compatibility path that every current
+  desktop is moving away from, owned entirely by a project outside this
+  one's control.</p>
+
+  <h2>What the PR gets right, and what is still open</h2>
+  <ul>
+    <li>The loud-failure behavior from #23/#24/#25 (no tray, icon
+    removed, window not shown) carries over unchanged onto the D-Bus
+    path - good continuity with the existing violation handling.</li>
+    <li>The PR's own text already states the "hidden icons" caveat
+    accurately ("Plasma may put it under the 'hidden icons' arrow the
+    first time; you can pin it in the tray settings") - this report
+    confirms that line is correct and not something the PR is hiding
+    from the reader.</li>
+    <li>Genuinely open: nobody has yet confirmed a left click reaches
+    the manager on real KDE/X11 hardware through <code>gui.Sni</code>.
+    The PR text says so directly ("The KDE check is left to the
+    reporter"); this machine has no KDE session available to close that
+    gap. GNOME 50 with the appindicator extension, and an independent
+    D-Bus client (<code>busctl</code>) parsing every reply, were the
+    only things verified so far.</li>
+    <li>No dbusmenu on Linux yet (Menu is <code>/NO_DBUSMENU</code>), so
+    there is no right-click "Show/Quit" popup - called out in the PR as
+    a possible follow-up, not a defect of this change.</li>
+  </ul>
+
+  <h2>Method &amp; confidence</h2>
+  <p>PR #26 and its stack (#22-#25) were read in full through
+  <code>gh</code>, including comments and reviews (both are empty - the
+  text quoted in the task is the PR's own description). The KDE bug
+  reports, the KDE Discuss thread, and <code>sniproxy.cpp</code> were
+  read directly rather than taken from secondary summaries. The
+  freedesktop SNI spec and KDE's own System Tray user documentation
+  were read directly for the <code>Status</code>/visibility claims. The
+  "hidden on first run" specific behavior is corroborated by multiple
+  independent forum reports rather than a single primary source, and is
+  presented with that caveat rather than as settled fact. No KDE
+  desktop was available on this machine to independently reproduce
+  either the original click loss or the new SNI behavior; both rest on
+  the cited external reports plus the PR author's own GNOME-side
+  testing.</p>
+
+  <footer>Compiled by a linux3 overnight research sub-agent. Full
+  research log kept machine-local (not published) at
+  /data/fearlessBranch3/overnightLogs/2026-09-15-tray-icon-research/log.md.</footer>
+</main>
+</body>
+</html>
