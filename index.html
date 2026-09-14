@@ -104,6 +104,10 @@
   <h2>Test runs</h2>
   <ul class="docs">
     <li>
+      <a href="./linuxSlowTestAgentTools.html">linuxSlowTestAgentTools: why DesktopDragTest still fails, driven one step at a time</a>
+      <span class="meta">A single-step, screenshot-confirmed repro of the desktop-drag test: pointer positioning turns out to be precise, but a screenshot-diff heuristic locks onto a status-bar text label instead of the file/folder icon it means to find, so the drag runs between two bogus, identical points. With hand-verified coordinates the same drag primitive completed 3/3 times. A related PR committing hardcoded-pixel automation to the shared repo was closed.</span>
+    </li>
+    <li>
       <a href="./linux-windows-comparison-2026-09-14.html">Fearless test run comparison: linux vs windows &mdash; 2026-09-14</a>
       <span class="meta">Reads linuxresults.html and winresults.html side by side: one same-named test fails on both but via different code paths, one platform-specific bug confirmed on each side, the linux report's own totals contradict its own table, and the shared manual test plan is written in Windows-only terms. One GitHub issue filed from the findings.</span>
     </li>

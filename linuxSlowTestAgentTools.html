@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>linuxSlowTestAgentTools: why DesktopDragTest still fails, driven one step at a time</title>
+<style>
+  :root {
+    --bg: #faf9f7;
+    --surface: #ffffff;
+    --text: #1c1a17;
+    --muted: #6b6459;
+    --accent: #a8531e;
+    --border: #e6e1d8;
+    --pass-bg: #e9f5e9;
+    --pass-text: #1e6b2c;
+    --fail-bg: #fbe9e7;
+    --fail-text: #a3271b;
+    --warn-bg: #fff3d9;
+    --warn-text: #8a5a00;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #17140f;
+      --surface: #201c16;
+      --text: #f1ede4;
+      --muted: #a89f8f;
+      --accent: #e08a4f;
+      --border: #332d23;
+      --pass-bg: #163420;
+      --pass-text: #7fd696;
+      --fail-bg: #3a1f1a;
+      --fail-text: #f3897a;
+      --warn-bg: #3a2d10;
+      --warn-text: #f0c05f;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: ui-sans-serif, system-ui, "Segoe UI", Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+  }
+  main {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 4rem 1.5rem 6rem;
+  }
+  a { color: var(--accent); }
+  h1 {
+    font-size: 1.65rem;
+    margin: 0 0 0.4rem;
+    letter-spacing: -0.01em;
+  }
+  p.lede {
+    color: var(--muted);
+    margin: 0 0 2rem;
+  }
+  .backlink {
+    display: inline-block;
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+    color: var(--muted);
+    text-decoration: none;
+  }
+  .backlink:hover { color: var(--accent); }
+  .status-banner {
+    background: var(--pass-bg);
+    color: var(--pass-text);
+    border-radius: 10px;
+    padding: 1.1rem 1.3rem;
+    font-weight: 700;
+    font-size: 1.05rem;
+    margin-bottom: 0.6rem;
+  }
+  .status-sub {
+    color: var(--muted);
+    font-size: 0.92rem;
+    margin: 0 0 2.6rem;
+  }
+  h2 {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 700;
+    color: var(--muted);
+    margin: 2.6rem 0 1rem;
+  }
+  h2:first-of-type { margin-top: 0; }
+  h3 {
+    font-size: 1.02rem;
+    margin: 1.6rem 0 0.6rem;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    font-size: 0.95rem;
+  }
+  th, td {
+    text-align: left;
+    padding: 0.7rem 0.9rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  th {
+    color: var(--muted);
+    font-weight: 600;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  tr:last-child td { border-bottom: none; }
+  .pill {
+    display: inline-block;
+    padding: 0.15rem 0.6rem;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 0.82rem;
+    white-space: nowrap;
+  }
+  .pill.pass { background: var(--pass-bg); color: var(--pass-text); }
+  .pill.fail { background: var(--fail-bg); color: var(--fail-text); }
+  .pill.warn { background: var(--warn-bg); color: var(--warn-text); }
+  ul.notes { margin: 0; padding-left: 1.2rem; color: var(--text); }
+  ul.notes li { margin-bottom: 0.5rem; }
+  ol.steps { margin: 0; padding-left: 1.2rem; color: var(--text); }
+  ol.steps li { margin-bottom: 0.5rem; }
+  details {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.9rem 1.2rem;
+    margin-bottom: 1rem;
+  }
+  summary { cursor: pointer; font-weight: 600; }
+  summary .pill { margin-left: 0.6rem; }
+  pre {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.9rem;
+    overflow-x: auto;
+    font-size: 0.82rem;
+    line-height: 1.45;
+    margin: 0.8rem 0 0;
+  }
+  code { font-size: 0.92em; }
+  figure {
+    margin: 1rem 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.8rem;
+  }
+  figure img {
+    display: block;
+    width: 100%;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+  }
+  figcaption {
+    margin-top: 0.6rem;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  .shots {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+  @media (max-width: 640px) { .shots { grid-template-columns: 1fr; } }
+  footer {
+    margin-top: 3rem;
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<main>
+  <a class="backlink" href="./">&larr; Shared documents</a>
+  <h1>linuxSlowTestAgentTools: why DesktopDragTest still fails, driven one step at a time</h1>
+  <p class="lede">A single-step, screenshot-confirmed-before-every-next-move repro of <code>agentTools.DesktopDragTest.aFileDraggedOntoAFolderMovesInsideIt</code> (run via <code>TestAgentTools.java</code>), following up on <a href="https://github.com/FearlessLang/Controllers/issues/27">Controllers#27</a>. Goal: find out whether the test's own driving loop is chaining Pilot calls blind, measure how brittle pointer positioning actually is, and get one slow, verified run to actually complete the drag.</p>
+
+  <div class="status-banner">Pointer positioning is not the problem &mdash; a screenshot-diff heuristic picking the wrong changed region is. With hand-verified icon coordinates, the unmodified drag primitive completed the real file move 3/3 times.</div>
+  <p class="status-sub">No fix was made to DesktopDragTest.java itself (see &sect;6 for why); findings were posted to <a href="https://github.com/FearlessLang/Controllers/issues/27">Controllers#27</a>. A pre-existing PR that had committed recorded-pixel-coordinate automation scripts into the shared AgentsCoordination repo was closed as part of this task (&sect;7).</p>
+
+  <h2>1. Method</h2>
+  <p>Rather than trust the existing test's own pacing, every Pilot primitive below (glide, click, chord, drag stage) was issued as its own JVM launch, immediately followed by a full-screen <code>Pilot.shot()</code>, which was then read and visually inspected before deciding the next step. No two Pilot operations were chained without a screenshot landing in between. The scenario matches <code>DesktopDragTest</code>: a temp folder holding one file (<code>example.txt</code>) and one empty subfolder (<code>destination</code>), opened with <code>Desktop.getDesktop().open()</code>, on a 1920&times;1080 GNOME/Wayland desktop shared with other agents' terminal windows (per <a href="https://github.com/MarcoServetto/AgentsCoordination">AgentsCoordination</a>'s <code>gui_gym.txt</code>).</p>
+
+  <h2>2. Is the test's own loop chaining blind operations?</h2>
+  <p>Reading <code>DesktopDragTest.java</code> and <code>Pilot.java</code> directly (not guessing):</p>
+  <ul class="notes">
+    <li><strong>Before the first keypress: yes, blind.</strong> The test opens the folder, then does a fixed <code>Pilot.pause(3000)</code> with no check that the new window actually has keyboard focus, before sending <code>VK_DOWN</code>.</li>
+    <li><strong>Locating the two icons: not blind, but wrong.</strong> <code>row()</code> does take a screenshot and diff it against a baseline via <code>Pilot.changed(unselected, crop, 0)</code> before trusting the result &mdash; that part of the design is sound in principle. The bug (&sect;3) is in what that diff actually finds.</li>
+    <li><strong>The drag itself: blind, and reasonably so.</strong> <code>pilot.drag(x0,y0,x1,y1)</code> runs press&rarr;move&rarr;move&rarr;release as one uninterrupted gesture with no screenshot in the middle. That is correct: a real user does not pause mid-drag to look at a screenshot either, and (&sect;5) splitting a drag across separate steps introduces its own bug. The gap is that nothing screenshots <em>after</em> the drag and <em>before</em> closing the window to confirm the drop visually; the test only checks the final result on disk, after a blind <code>Pilot.pause(2000)</code> and a blind <code>Ctrl+W</code>.</li>
+  </ul>
+  <p>So: partially blind, but the single biggest cause of the reported Linux failure turned out not to be a missing screenshot at all &mdash; it is a screenshot whose result is misread.</p>
+
+  <h2>3. Root cause: the icon-grid layout breaks row()'s list assumption</h2>
+  <p><code>row()</code>'s doc comment assumes: &ldquo;the folder holds two entries, so down reaches the lower one and up the upper one wherever the selection starts.&rdquo; That is a vertical-list assumption. On this machine, with a wide/maximized window and only 2 entries, Nautilus lays them out <strong>side by side in a single row</strong>, not stacked. Reproduced directly:</p>
+  <ol class="steps">
+    <li>Opened the folder, confirmed via screenshot both icons render side by side (destination, example.txt).</li>
+    <li>Clicked empty space to establish a clean, no-selection baseline screenshot.</li>
+    <li>Sent <code>VK_DOWN</code>, waited, screenshot: <code>destination</code> became selected (the first item in tab order &mdash; there was no &ldquo;down&rdquo; to move into, since nothing was selected yet).</li>
+    <li>Sent <code>VK_UP</code>, waited, screenshot: <code>destination</code> <em>stayed</em> selected &mdash; already the only row, nowhere to move &ldquo;up&rdquo; to.</li>
+  </ol>
+  <p>Both calls to <code>Pilot.changed(unselected, crop, 0)</code> returned the exact same rectangle: <code>x=1232,y=979,w=303,h=28</code> (screen coordinates) &mdash; not either icon, but the status-bar label in the window's bottom-right corner (&ldquo;&ldquo;destination&rdquo; selected (containing 0 items)&rdquo;). Selecting an icon in this view changes <em>two</em> disjoint regions of the screen at once &mdash; a subtle highlight around the icon, and that status-bar text &mdash; and the largest-connected-region heuristic in <code>Pilot.changed</code> picked the text every time:</p>
+  <figure>
+    <img src="./linuxSlowTestAgentTools/selection-status-bar.png" alt="Nautilus window with destination folder selected; a light highlight sits behind the folder icon, and a separate status-bar label reading destination selected, containing 0 items sits in the bottom-right corner">
+    <figcaption>Both row(VK_DOWN) and row(VK_UP) diffs locked onto the bottom-right status-bar label (barely visible here, bottom-right corner) rather than the icon highlight around &ldquo;destination&rdquo; (top-left). The two computed &ldquo;icon&rdquo; targets ended up identical &mdash; both in the status bar, nowhere near either real icon.</figcaption>
+  </figure>
+  <p>Consequence: <code>iconX/iconY</code> computed <em>the same point</em>, <code>(1246,993)</code>, for both &ldquo;file&rdquo; and &ldquo;folder&rdquo;. The subsequent <code>pilot.drag(...)</code> call runs from that point to itself, inside the status bar, nowhere near the file manager's content area. No assertion fires (<code>Pilot.changed</code>'s <code>assert bestN&gt;0</code> is satisfied both times &mdash; a region did change, just the wrong one), and the drag completes without error &mdash; which is exactly the symptom <a href="https://github.com/FearlessLang/Controllers/issues/27">Controllers#27</a> reported for Linux: &ldquo;row() and drag() both completed without error&rdquo;, file never moved.</p>
+
+  <h2>4. Is pointer positioning itself brittle?</h2>
+  <p>Once the two real icon centers were read off a screenshot by eye (<code>(836,198)</code> for <code>example.txt</code>, <code>(731,198)</code> for <code>destination</code>), single, precise clicks and glides landed exactly where commanded, repeatedly, with no detectable offset:</p>
+  <ul class="notes">
+    <li>A direct <code>pilot.click(836,198)</code> selected <code>example.txt</code> (confirmed via its highlight and the status-bar label reading &ldquo;example.txt&rdquo; selected), not its ~105px-away neighbor &mdash; on an icon whose clickable area is roughly 64&times;64px.</li>
+    <li>Repeating the same commanded coordinates across many separate JVM launches (separate <code>Robot</code> instances entirely) produced the same result every time. The glide primitive's own final move is an exact <code>(x1,y1)</code>, not an approximation, so there is no reason to expect drift, and none was observed.</li>
+  </ul>
+  <p><strong>One caveat, not a positioning error: screenshots never show the pointer at all.</strong> <code>Pilot.shot()</code> is <code>java.awt.Robot.createScreenCapture</code>; on this GNOME/Wayland desktop the composited frame it reads never includes the mouse-pointer glyph. The literal technique this task asked to try &mdash; &ldquo;move, screenshot, visually confirm the cursor is where intended, by looking at the cursor&rdquo; &mdash; is not something a screenshot on this machine can do; there is no pointer sprite in the image to find. Verifying &ldquo;the pointer is where intended&rdquo; has to go through an observable side effect instead (a selection highlight, a hover state, a drag-ghost, a drop-target highlight), which is what &sect;3 and &sect;5 both actually rely on. This is recorded in <code>gui_gym.txt</code> for future sessions.</p>
+  <p>Net measurement: no meaningful pixel-level brittleness was found in glide/click/drag targeting itself over the course of this investigation. The brittleness lives entirely in <em>choosing the right target pixel</em> &mdash; both the layout assumption in &sect;3, and, more generally, any hardcoded coordinate becoming wrong the moment screen size, window state, or on-screen content shifts (the same brittleness the closed PR in &sect;7 hit from a different angle).</p>
+
+  <h2>5. Does the drag primitive itself work, given correct coordinates?</h2>
+  <p>With the two real icon centers fed in directly (bypassing the broken <code>row()</code> step), the scenario was run end to end three times from a clean temp-folder fixture, using the unmodified <code>pilot.drag(x0,y0,x1,y1)</code> call exactly as <code>DesktopDragTest.java</code> invokes it &mdash; no extra pauses, no extra screenshots inside the gesture:</p>
+  <table>
+    <thead><tr><th>Trial</th><th>Result</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td><span class="pill pass">example.txt moved into destination/</span></td></tr>
+      <tr><td>2</td><td><span class="pill pass">example.txt moved into destination/</span></td></tr>
+      <tr><td>3</td><td><span class="pill pass">example.txt moved into destination/</span></td></tr>
+    </tbody>
+  </table>
+  <p>A slower, hand-stepped version of the same drag (glide to source, press, glide to midpoint with a screenshot check, glide to destination with a 2-second hover and a screenshot check, then release) also completed successfully and additionally captured the intermediate visual feedback Nautilus gives during a real drag:</p>
+  <div class="shots">
+    <figure>
+      <img src="./linuxSlowTestAgentTools/drag-ghost.png" alt="A drag-ghost image of example.txt following the pointer partway between the two icons">
+      <figcaption>Mid-glide, button held: Nautilus renders a drag-ghost of example.txt following the pointer.</figcaption>
+    </figure>
+    <figure>
+      <img src="./linuxSlowTestAgentTools/drop-target-highlight.png" alt="The destination folder icon outlined and highlighted as an active drop target while the pointer hovers over it with the button still held">
+      <figcaption>Hovering over the folder with the button still held: Nautilus outlines it as the active drop target.</figcaption>
+    </figure>
+  </div>
+  <p>Conclusion: on this machine, the drag/drop mechanics (grab, motion, drop-target recognition, release) are not the source of the Linux failure reported in <a href="https://github.com/FearlessLang/Controllers/issues/27">Controllers#27</a>. They work, reliably, once <code>row()</code>'s icon-location step is bypassed.</p>
+
+  <h3>A debugging pitfall found along the way (not a product bug)</h3>
+  <p>An early attempt to single-step the drag by launching a <em>separate JVM process per step</em> (press in one process, release in another) reliably failed to complete the drop, even with a long hover. Cause: each new process constructs a fresh <code>Pilot</code>/<code>Robot</code>, whose internal &ldquo;buttons currently held&rdquo; bookkeeping starts empty; its first <code>hold()</code> call then re-sends a <code>mousePress</code> for a button that is physically already down (from the previous process), and that spurious extra press aborted the in-progress native Wayland drag. This does not affect <code>DesktopDragTest.java</code> itself, which correctly keeps one <code>Pilot</code> instance and one unbroken <code>pilot.drag(...)</code> call &mdash; but it is a real trap for manual step-by-step debugging of a drag, and is now recorded in <code>gui_gym.txt</code>.</p>
+
+  <h2>6. What was (and was not) fixed</h2>
+  <p>No change was made to <code>DesktopDragTest.java</code> or <code>Pilot.java</code>. <code>row()</code> needs a genuinely different icon-location strategy &mdash; arrow-key list navigation does not apply to a single-row grid, and the fix is not obviously a small patch (e.g. restricting the diff to the icon-grid area still needs a non-hardcoded way to know where that area ends). Per this task's own framing, prefer a documented, precise root cause over another pixel-coordinate patch applied without full confidence it holds on a different window size or icon count; the finding was posted to <a href="https://github.com/FearlessLang/Controllers/issues/27">Controllers#27</a> for whoever picks up the fix, with the exact reproduction above. Windows' failure (aborts earlier, inside <code>Pilot.changed</code>, before the drag) was not re-tested here &mdash; no Windows access in this session &mdash; so it is not yet known whether it shares this root cause.</p>
+
+  <h2>7. The closed PR: recorded-coordinate scripts belong local, not in the shared repo</h2>
+  <p><a href="https://github.com/MarcoServetto/AgentsCoordination/pull/12">AgentsCoordination#12</a> had committed 3 auto-mode replay scripts for the Fearless Manager's manual GUI test plan, each built by recording a human-driven Pilot session and hardcoding the resulting pixel coordinates (<code>pilot.click(264,183)</code>, etc.) into a committed Java file. That PR's own description already conceded the coordinates are tied to &ldquo;a different screen size, a maximized-vs-not window, or a third project tile shifting the grid&rdquo;. Closed as part of this task: this is exactly the brittleness &sect;3 and &sect;4 above measured directly &mdash; a hardcoded coordinate has no way to notice it has gone stale, it just clicks the wrong thing. Recorded pixel coordinates are a reasonable, cheap technique for an agent driving the desktop <em>locally, once, right now</em>; they are not portable automation, and should not be committed to a repo shared across machines. Full reasoning in the PR's closing comment.</p>
+
+  <h2>Findings added to gui_gym.txt / gui_nautilus_gym.txt</h2>
+  <ul class="notes">
+    <li><code>Pilot.shot()</code> never captures the mouse pointer on this desktop &mdash; confirm targeting via a side effect, not by looking for the cursor.</li>
+    <li>Keep a whole drag gesture on one live <code>Pilot</code>/<code>Robot</code> instance; relaunching mid-gesture resends a spurious press that can abort a real drag.</li>
+    <li>Deleting and recreating a directory a Files window has open can leave that window showing a stale/blank view.</li>
+    <li>(Nautilus-specific) A 2-entry window is not reliably a vertical list; selecting an icon changes two disjoint screen regions at once, and a largest-changed-region diff can pick the wrong one.</li>
+  </ul>
+
+  <footer>Generated by the Claude agent on marcoautomation2 as an overnight task (linux3). Findings posted to <a href="https://github.com/FearlessLang/Controllers/issues/27">FearlessLang/Controllers#27</a>; <a href="https://github.com/MarcoServetto/AgentsCoordination/pull/12">AgentsCoordination#12</a> closed with an explanatory comment. No code was changed in any Fearless repository. Full reasoning log kept in the fearlessBranch3 working copy's overnight logs, not published here.</footer>
+</main>
+</body>
+</html>
