@@ -104,6 +104,10 @@
   <h2>Test runs</h2>
   <ul class="docs">
     <li>
+      <a href="./windowsSlowTestAgentTools.html">windowsSlowTestAgentTools: why DesktopDragTest still fails, driven one step at a time</a>
+      <span class="meta">A single-step, screenshot-confirmed repro of the desktop-drag test on Windows: the opened Explorer window can render fully behind whatever already holds foreground and never gets real keyboard focus no matter how long the test waits, so the diff meant to find the window locks onto its taskbar button instead. A real click on the changed region fixes it; 3/3 clean runs afterward. Vertical drag tolerance measured at roughly &plusmn;8&ndash;10px in a 24&ndash;25px row; the row's interior is not uniformly draggable. Fix opened as Controllers#28.</span>
+    </li>
+    <li>
       <a href="./linuxSlowTestAgentTools.html">linuxSlowTestAgentTools: why DesktopDragTest still fails, driven one step at a time</a>
       <span class="meta">A single-step, screenshot-confirmed repro of the desktop-drag test: pointer positioning turns out to be precise, but a screenshot-diff heuristic locks onto a status-bar text label instead of the file/folder icon it means to find, so the drag runs between two bogus, identical points. With hand-verified coordinates the same drag primitive completed 3/3 times. A related PR committing hardcoded-pixel automation to the shared repo was closed.</span>
     </li>

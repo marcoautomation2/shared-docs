@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>windowsSlowTestAgentTools: why DesktopDragTest still fails, driven one step at a time</title>
+<style>
+  :root {
+    --bg: #faf9f7;
+    --surface: #ffffff;
+    --text: #1c1a17;
+    --muted: #6b6459;
+    --accent: #a8531e;
+    --border: #e6e1d8;
+    --pass-bg: #e9f5e9;
+    --pass-text: #1e6b2c;
+    --fail-bg: #fbe9e7;
+    --fail-text: #a3271b;
+    --warn-bg: #fff3d9;
+    --warn-text: #8a5a00;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #17140f;
+      --surface: #201c16;
+      --text: #f1ede4;
+      --muted: #a89f8f;
+      --accent: #e08a4f;
+      --border: #332d23;
+      --pass-bg: #163420;
+      --pass-text: #7fd696;
+      --fail-bg: #3a1f1a;
+      --fail-text: #f3897a;
+      --warn-bg: #3a2d10;
+      --warn-text: #f0c05f;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: ui-sans-serif, system-ui, "Segoe UI", Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+  }
+  main {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 4rem 1.5rem 6rem;
+  }
+  a { color: var(--accent); }
+  h1 {
+    font-size: 1.65rem;
+    margin: 0 0 0.4rem;
+    letter-spacing: -0.01em;
+  }
+  p.lede {
+    color: var(--muted);
+    margin: 0 0 2rem;
+  }
+  .backlink {
+    display: inline-block;
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+    color: var(--muted);
+    text-decoration: none;
+  }
+  .backlink:hover { color: var(--accent); }
+  .status-banner {
+    background: var(--pass-bg);
+    color: var(--pass-text);
+    border-radius: 10px;
+    padding: 1.1rem 1.3rem;
+    font-weight: 700;
+    font-size: 1.05rem;
+    margin-bottom: 0.6rem;
+  }
+  .status-sub {
+    color: var(--muted);
+    font-size: 0.92rem;
+    margin: 0 0 2.6rem;
+  }
+  h2 {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 700;
+    color: var(--muted);
+    margin: 2.6rem 0 1rem;
+  }
+  h2:first-of-type { margin-top: 0; }
+  h3 {
+    font-size: 1.02rem;
+    margin: 1.6rem 0 0.6rem;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    font-size: 0.95rem;
+  }
+  th, td {
+    text-align: left;
+    padding: 0.7rem 0.9rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  th {
+    color: var(--muted);
+    font-weight: 600;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  tr:last-child td { border-bottom: none; }
+  .pill {
+    display: inline-block;
+    padding: 0.15rem 0.6rem;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 0.82rem;
+    white-space: nowrap;
+  }
+  .pill.pass { background: var(--pass-bg); color: var(--pass-text); }
+  .pill.fail { background: var(--fail-bg); color: var(--fail-text); }
+  .pill.warn { background: var(--warn-bg); color: var(--warn-text); }
+  ul.notes { margin: 0; padding-left: 1.2rem; color: var(--text); }
+  ul.notes li { margin-bottom: 0.5rem; }
+  ol.steps { margin: 0; padding-left: 1.2rem; color: var(--text); }
+  ol.steps li { margin-bottom: 0.5rem; }
+  details {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.9rem 1.2rem;
+    margin-bottom: 1rem;
+  }
+  summary { cursor: pointer; font-weight: 600; }
+  summary .pill { margin-left: 0.6rem; }
+  pre {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.9rem;
+    overflow-x: auto;
+    font-size: 0.82rem;
+    line-height: 1.45;
+    margin: 0.8rem 0 0;
+  }
+  code { font-size: 0.92em; }
+  figure {
+    margin: 1rem 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.8rem;
+  }
+  figure img {
+    display: block;
+    width: 100%;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+  }
+  figcaption {
+    margin-top: 0.6rem;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  .shots {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+  @media (max-width: 640px) { .shots { grid-template-columns: 1fr; } }
+  footer {
+    margin-top: 3rem;
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<main>
+  <a class="backlink" href="./">&larr; Shared documents</a>
+  <h1>windowsSlowTestAgentTools: why DesktopDragTest still fails, driven one step at a time</h1>
+  <p class="lede">A single-step, screenshot-confirmed-before-every-next-move repro of <code>agentTools.DesktopDragTest.aFileDraggedOntoAFolderMovesInsideIt</code> (run via <code>TestAgentTools.java</code>) on the Windows automation machine, following up on the failure recorded in <a href="./winresults.html">winresults.html</a>. Goal: find out whether the failing loop is an agent chaining Pilot calls blind, measure how brittle pointer positioning actually is, and get a slow, verified run to actually complete the drag &mdash; and, if the cause turns out general, fix it.</p>
+
+  <div class="status-banner">Not a timing race. The opened window can render fully behind whatever already holds foreground and never receives real keyboard focus no matter how long the test waits; the diff meant to find the window then locks onto the only thing that did change, a new taskbar button. A real click on that changed region &mdash; the one gesture a window cannot refuse &mdash; fixes it. 3/3 clean runs after the fix.</div>
+  <p class="status-sub">A general fix (no hardcoded coordinates) was implemented in <code>DesktopDragTest.java</code> and opened as <a href="https://github.com/FearlessLang/Controllers/pull/28">Controllers#28</a>. The unrelated <a href="https://github.com/MarcoServetto/AgentsCoordination/pull/12">AgentsCoordination#12</a> (hardcoded-pixel replay scripts committed to the shared repo) was already closed by the parallel Linux investigation; see &sect;7.</p>
+
+  <h2>1. Method</h2>
+  <p>Every Pilot primitive below (open, shot, click, chord, drag) was issued as its own JVM launch against a small throwaway command-line harness built on the actual <code>agentTools.Pilot</code> and compiled classes (never committed, deleted at the end of this task), immediately followed by a full-screen <code>Pilot.shot()</code> that was read and visually inspected before deciding the next step. No two Pilot operations were chained without a screenshot landing in between until the mechanism itself was understood. The scenario matches <code>DesktopDragTest</code>: a temp folder holding one file (<code>example.txt</code>) and one empty subfolder (<code>destination</code>), opened with <code>Desktop.getDesktop().open()</code>, on a 1920&times;1080 Windows 11 desktop (rendered at 1280&times;720 user-space pixels under 150% scaling, per <code>gui_gym.txt</code>) shared with three other always-on agent terminals (win1, win2, winCoordinator).</p>
+
+  <h2>2. Is the failing loop chaining blind operations?</h2>
+  <p>Reading <code>DesktopDragTest.java</code> and <code>Pilot.java</code> directly (not guessing), before this task's fix:</p>
+  <ul class="notes">
+    <li><strong>Before the first keypress: yes, blind, and the wrong kind of blind.</strong> The test opens the folder, does a fixed <code>Pilot.pause(3000)</code>, then diffs a before/after screenshot to find the window &mdash; but never checks that what it found <em>is</em> the window, or that it holds keyboard focus. A longer pause could not have fixed this (&sect;3): the problem is not that 3000&thinsp;ms is too short, it is that nothing in the loop ever confirms the assumption it is standing on.</li>
+    <li><strong>Locating the two icons: not blind.</strong> <code>row()</code> takes a screenshot and diffs it against a baseline via <code>Pilot.changed(unselected, crop, 0)</code> before trusting the result. Once the window genuinely has focus (&sect;3, &sect;5), this step measured correctly and consistently across every trial.</li>
+    <li><strong>The drag itself: blind, and reasonably so.</strong> <code>pilot.drag(x0,y0,x1,y1)</code> runs press&rarr;move&rarr;move&rarr;release as one uninterrupted gesture with no screenshot in the middle, matching how a real person drags &mdash; nobody pauses mid-drag to check a screenshot.</li>
+  </ul>
+  <p>So: the original loop was arrogant in exactly one place &mdash; between opening the window and trusting it was ready &mdash; and that one gap is what breaks the whole run, since the row() and drag() steps that follow are only as good as the window rectangle they were handed.</p>
+
+  <h2>3. Root cause: the new window can be entirely occluded and never gains focus, no matter the wait</h2>
+  <p>Reproduced directly, on this machine, with a terminal window already holding foreground when the folder is opened (the normal state on this shared desktop &mdash; some agent's terminal is always the active window):</p>
+  <ol class="steps">
+    <li>Screenshot before opening: baseline desktop.</li>
+    <li><code>Desktop.getDesktop().open(root.toFile())</code>, then screenshot immediately: a new taskbar button for the folder appears; no window is visible anywhere on screen.</li>
+    <li>Waited 3 full seconds, screenshotted again: still no window visible, the taskbar button no longer even flashing, the other terminal still the visibly active window (see Fig. 1).</li>
+    <li>Sent <code>VK_DOWN</code> anyway and screenshotted: no change anywhere in the Explorer content area &mdash; the key went to whatever already had focus, not to Explorer (Fig. 2).</li>
+  </ol>
+  <figure>
+    <img src="./windowsSlowTestAgentTools/1-window-opened-occluded.png" alt="Desktop after opening the test folder and waiting three seconds: no Explorer window is visible anywhere, only a new taskbar button reading desktopDragTestProbe">
+    <figcaption>Fig. 1 &mdash; 3 seconds after <code>Desktop.open()</code>: the only visible sign the folder opened at all is the new taskbar button (bottom left of the taskbar). No window ever rendered on top.</figcaption>
+  </figure>
+  <figure>
+    <img src="./windowsSlowTestAgentTools/2-still-unfocused-after-key-and-wait.png" alt="Same desktop after sending a down-arrow key press: nothing changed, the terminal remains the active window, the taskbar button is unchanged">
+    <figcaption>Fig. 2 &mdash; After sending <code>VK_DOWN</code>: nothing changed. The key was not lost to timing &mdash; it went to the still-focused terminal, since the Explorer window was never given focus to begin with.</figcaption>
+  </figure>
+  <p>This is a genuine Windows behavior, not a bug in Pilot: a process that is not itself the foreground application (here, the JVM launched from a background shell) generally cannot force a newly opened window to the foreground; Windows grants the new window a taskbar flash instead and leaves keyboard focus wherever it already was. No amount of waiting changes that outcome &mdash; it is a permission the OS withholds, not a race it eventually resolves. <code>Pilot.changed(before, after, 6)</code> then does exactly what it is supposed to: it finds the single largest connected region that changed between the two screenshots, and on this machine that region is reliably the new taskbar button (a small, roughly 130&ndash;230&thinsp;px wide, ~30&ndash;40&thinsp;px tall rectangle near the bottom of the screen), not the (invisible) window. Every step downstream &mdash; cropping an &ldquo;unselected&rdquo; reference image, diffing for row selection, computing icon coordinates &mdash; then operates on a slice of the taskbar, and the eventual <code>assert bestN&gt;0</code> failure reported in <a href="./winresults.html">winresults.html</a> is simply the row-selection diff finding no change at all inside that meaningless crop.</p>
+
+  <h2>4. The fix: a real click is the one gesture a window cannot refuse</h2>
+  <p><code>gui_gym.txt</code> already recorded, from earlier manual sessions, that &ldquo;clicking the target window's taskbar icon directly&hellip;was the reliable way to raise and focus a window here&rdquo; &mdash; the automated test simply never used it. The fix adds one step between opening the folder and trusting the result: click the center of whatever region the diff found (window or taskbar button &mdash; the same code path handles either, since a click inside an already-visible window's content area is harmless), then re-shot and re-measure the window from that point on. The click target is always computed from <code>Pilot.changed</code>, never a fixed coordinate, so it adapts to wherever the taskbar button or window actually lands.</p>
+  <ol class="steps">
+    <li>Clicked the center of the detected taskbar-button rectangle.</li>
+    <li>Screenshot: the Explorer window is now fully visible, in the foreground, its title bar highlighted active (Fig. 3).</li>
+    <li>Sent <code>VK_DOWN</code>, screenshotted: <code>example.txt</code> visibly highlighted, status bar reads &ldquo;1 item selected&rdquo; (Fig. 4).</li>
+    <li>Sent <code>VK_UP</code>, screenshotted: selection moved to <code>destination</code>, exactly as <code>row()</code>'s own doc comment predicts.</li>
+    <li>Dragged from the file's icon to the folder's icon (eyeballed coordinates from the screenshot, no special care): the window afterward shows one item left (<code>destination</code>), and the file is confirmed on disk at <code>destination/example.txt</code> (Fig. 5).</li>
+  </ol>
+  <div class="shots">
+    <figure>
+      <img src="./windowsSlowTestAgentTools/3-window-visible-after-taskbar-click.png" alt="Explorer window now visible and in the foreground after clicking the taskbar button, showing destination and example.txt">
+      <figcaption>Fig. 3 &mdash; One click on the diff-detected taskbar rectangle: the window is now real, visible, and foreground.</figcaption>
+    </figure>
+    <figure>
+      <img src="./windowsSlowTestAgentTools/4-selection-highlight-after-real-focus.png" alt="Explorer window with example.txt highlighted blue after a down-arrow key press, status bar reads 1 item selected">
+      <figcaption>Fig. 4 &mdash; <code>VK_DOWN</code> now reaches the window: <code>example.txt</code> highlighted, status bar confirms the selection.</figcaption>
+    </figure>
+  </div>
+  <figure>
+    <img src="./windowsSlowTestAgentTools/5-drag-succeeded-file-moved.png" alt="Explorer window after the drag, showing only the destination folder remaining, one item">
+    <figcaption>Fig. 5 &mdash; After the drag: only <code>destination</code> remains in the window; the file is confirmed moved on disk.</figcaption>
+  </figure>
+  <p>This exact sequence (open &rarr; diff &rarr; click &rarr; diff &rarr; row(down) &rarr; row(up) &rarr; drag) was then re-run as <code>DesktopDragTest.java</code> itself, via <code>TestAgentTools.java</code>, three consecutive times from a clean process each time:</p>
+  <table>
+    <thead><tr><th>Trial</th><th>Result</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td><span class="pill pass">example.txt moved into destination/</span></td></tr>
+      <tr><td>2</td><td><span class="pill pass">example.txt moved into destination/</span></td></tr>
+      <tr><td>3</td><td><span class="pill pass">example.txt moved into destination/</span></td></tr>
+    </tbody>
+  </table>
+  <p><code>TestAllController.java</code> (149/149, excludes <code>agentTools</code>) was also re-run after the change and remained green, as expected since only <code>DesktopDragTest.java</code> was touched.</p>
+
+  <h2>5. How brittle is pointer positioning, in actual pixels?</h2>
+  <p>With the fix in place and the real row rectangles read back from the harness (<code>fileRow=(592,198,364,25)</code>, <code>folderRow=(592,170,364,24)</code> in this window's placement &mdash; a 24&ndash;25&thinsp;px tall row), the drag's source point was offset from the icon center in a grid of trials, each a full fresh run of the fixture, to find where it stops landing on the file:</p>
+  <table>
+    <thead><tr><th>Offset from icon center</th><th>Direction</th><th>Result</th></tr></thead>
+    <tbody>
+      <tr><td>0&thinsp;px</td><td>&mdash;</td><td><span class="pill pass">moved</span></td></tr>
+      <tr><td>+8&thinsp;px</td><td>down (into row)</td><td><span class="pill pass">moved</span></td></tr>
+      <tr><td>+10&thinsp;px</td><td>down (into row)</td><td><span class="pill pass">moved</span></td></tr>
+      <tr><td>+11&thinsp;px</td><td>down (toward row edge, row half-height &asymp;12&ndash;13&thinsp;px)</td><td><span class="pill fail">missed</span></td></tr>
+      <tr><td>+12&thinsp;px</td><td>down</td><td><span class="pill fail">missed</span></td></tr>
+      <tr><td>&minus;5&thinsp;px</td><td>up (into row)</td><td><span class="pill pass">moved</span></td></tr>
+      <tr><td>&minus;8&thinsp;px</td><td>up (into row)</td><td><span class="pill pass">moved</span></td></tr>
+      <tr><td>&minus;9&thinsp;px</td><td>up (toward row edge)</td><td><span class="pill fail">missed</span></td></tr>
+      <tr><td>&minus;10&thinsp;px</td><td>up</td><td><span class="pill fail">missed</span></td></tr>
+      <tr><td>+150&thinsp;px</td><td>right, same row (mid-row, past the file name text)</td><td><span class="pill fail">missed</span></td></tr>
+      <tr><td>+340&thinsp;px</td><td>right, same row (near the &ldquo;date modified&rdquo; text, row is 364&thinsp;px wide)</td><td><span class="pill pass">moved</span></td></tr>
+    </tbody>
+  </table>
+  <p>Two findings from this grid:</p>
+  <ul class="notes">
+    <li><strong>Vertical tolerance is real but asymmetric and roughly &plusmn;8&ndash;10&thinsp;px</strong> around the icon center in a 24&ndash;25&thinsp;px row (about 70&ndash;80% of the half-row-height) &mdash; comfortably inside the icon glyph, but a caller has no more than about a third of the row's height to spare before landing on the row above or below, or on nothing draggable at all.</li>
+    <li><strong>The row is not uniformly draggable end to end.</strong> A point in the middle of the row's blank space (past the file name, before the date column) did not pick up the item to drag from at all, while a point further right, over the date text, did. This means &ldquo;click anywhere on the row&rdquo; is false in Windows' Details view, and only the icon glyph near the row's left edge (or actual text glyphs further along) reliably grabs the item. <code>iconX/iconY</code>'s existing choice &mdash; <code>row.x+row.height/2</code>, i.e. the icon square itself &mdash; already lands inside the one part of the row proven safe here, which is why it needed no change.</li>
+  </ul>
+  <p><em>Caveat: this grid was walked on one window placement, in one session; row rectangles differ by a few pixels between separate window opens (Explorer does not guarantee pixel-identical placement across launches), so the exact boundary numbers above are specific to that placement, not universal constants &mdash; but the shape of the result (a tolerance on the order of a third of the row height, and an unreliable row interior) should generalize.</em></p>
+
+  <h2>6. What was fixed, and what was not</h2>
+  <p><a href="https://github.com/FearlessLang/Controllers/pull/28">Controllers#28</a> adds one step, <code>raise()</code>, to <code>DesktopDragTest.java</code>: after opening the folder, wait briefly, diff against the pre-open baseline, click the center of whatever changed, then re-shot and re-measure. It uses only Pilot's existing, cross-platform primitives (<code>shot</code>, <code>changed</code>, <code>click</code>) and no hardcoded coordinate or Windows-specific API, so it is not expected to be Windows-only, though it was only verified on Windows in this task. Not changed: <code>Pilot.java</code> itself, and <code>row()</code>'s icon-location logic, which was already correct once given a real window to measure.</p>
+  <p>Not investigated here: whether the same &ldquo;window opens without focus&rdquo; behavior would occur with no other agent terminal holding foreground (e.g. a genuinely idle desktop) &mdash; on this always-shared machine that state essentially never occurs, so the fix was designed to hold regardless, and does not rely on the window ever having been granted focus for free.</p>
+
+  <h2>7. The closed PR: recorded-coordinate scripts belong local, not in the shared repo</h2>
+  <p><a href="https://github.com/MarcoServetto/AgentsCoordination/pull/12">AgentsCoordination#12</a> had committed 3 auto-mode replay scripts for the Fearless Manager's manual GUI test plan, each built by recording a human-driven Pilot session and hardcoding the resulting pixel coordinates into a committed Java file. It was already closed, for exactly this reason, by the parallel investigation recorded in <a href="./linuxSlowTestAgentTools.html">linuxSlowTestAgentTools.html</a> &sect;7, before this task began; nothing further was needed here. The &plusmn;8&ndash;10&thinsp;px tolerance and the unreliable row-interior measured in &sect;5 above are exactly the kind of brittleness such a script has no way to notice once it goes stale &mdash; it just clicks the wrong thing, silently. The throwaway harness built for this investigation (a small command-line wrapper issuing single Pilot primitives) was deleted at the end of this task and was never committed anywhere, for the same reason.</p>
+
+  <h2>Findings added to gui_gym.txt</h2>
+  <ul class="notes">
+    <li>A window opened via <code>Desktop.open()</code> from a background process can render fully behind whatever already holds foreground and never receive real keyboard focus, however long the caller waits; a genuine mouse click (on the window if visible, or on its taskbar button if not) is what actually grants focus, and the target for that click can be read straight off a before/after screenshot diff.</li>
+    <li>Windows Explorer's Details view does not treat the whole row as a uniform drag/click target: a point in the row's blank middle space can miss entirely, while the icon glyph and the text columns work.</li>
+  </ul>
+
+  <footer>Generated by the Claude agent on marcoautomation2 as an overnight task (win3). Fix opened as <a href="https://github.com/FearlessLang/Controllers/pull/28">FearlessLang/Controllers#28</a>. No other Fearless repository was changed. Full reasoning log kept in the fearlessBranch3 working copy's overnight logs, not published here.</footer>
+</main>
+</body>
+</html>
