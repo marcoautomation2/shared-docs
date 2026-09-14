@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fearless test run comparison: linux vs windows &mdash; 2026-09-14</title>
+<style>
+  :root {
+    --bg: #faf9f7;
+    --surface: #ffffff;
+    --text: #1c1a17;
+    --muted: #6b6459;
+    --accent: #a8531e;
+    --border: #e6e1d8;
+    --pass-bg: #e9f5e9;
+    --pass-text: #1e6b2c;
+    --fail-bg: #fbe9e7;
+    --fail-text: #a3271b;
+    --warn-bg: #fff3d9;
+    --warn-text: #8a5a00;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #17140f;
+      --surface: #201c16;
+      --text: #f1ede4;
+      --muted: #a89f8f;
+      --accent: #e08a4f;
+      --border: #332d23;
+      --pass-bg: #163420;
+      --pass-text: #7fd696;
+      --fail-bg: #3a1f1a;
+      --fail-text: #f3897a;
+      --warn-bg: #3a2d10;
+      --warn-text: #f0c05f;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: ui-sans-serif, system-ui, "Segoe UI", Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+  }
+  main {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 4rem 1.5rem 6rem;
+  }
+  a { color: var(--accent); }
+  h1 {
+    font-size: 1.75rem;
+    margin: 0 0 0.4rem;
+    letter-spacing: -0.01em;
+  }
+  p.lede {
+    color: var(--muted);
+    margin: 0 0 2rem;
+  }
+  .backlink {
+    display: inline-block;
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+    color: var(--muted);
+    text-decoration: none;
+  }
+  .backlink:hover { color: var(--accent); }
+  .status-banner {
+    background: var(--warn-bg);
+    color: var(--warn-text);
+    border-radius: 10px;
+    padding: 1.1rem 1.3rem;
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-bottom: 0.6rem;
+  }
+  .status-sub {
+    color: var(--muted);
+    font-size: 0.92rem;
+    margin: 0 0 2.6rem;
+  }
+  h2 {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 700;
+    color: var(--muted);
+    margin: 2.6rem 0 1rem;
+  }
+  h2:first-of-type { margin-top: 0; }
+  h3 {
+    font-size: 1.02rem;
+    margin: 1.6rem 0 0.6rem;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    font-size: 0.95rem;
+  }
+  th, td {
+    text-align: left;
+    padding: 0.7rem 0.9rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  th {
+    color: var(--muted);
+    font-weight: 600;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  tr:last-child td { border-bottom: none; }
+  .pill {
+    display: inline-block;
+    padding: 0.15rem 0.6rem;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 0.82rem;
+    white-space: nowrap;
+  }
+  .pill.pass { background: var(--pass-bg); color: var(--pass-text); }
+  .pill.fail { background: var(--fail-bg); color: var(--fail-text); }
+  .pill.warn { background: var(--warn-bg); color: var(--warn-text); }
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+  ul.notes { margin: 0; padding-left: 1.2rem; color: var(--text); }
+  ul.notes li { margin-bottom: 0.5rem; }
+  details {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.9rem 1.2rem;
+    margin-bottom: 1rem;
+  }
+  details + details { margin-top: 0; }
+  summary {
+    cursor: pointer;
+    font-weight: 600;
+  }
+  summary .pill { margin-left: 0.6rem; }
+  pre {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 0.9rem;
+    overflow-x: auto;
+    font-size: 0.82rem;
+    line-height: 1.45;
+    margin: 0.8rem 0 0;
+  }
+  code { font-size: 0.92em; }
+  footer {
+    margin-top: 3rem;
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+</style>
+</head>
+<body>
+<main>
+  <a class="backlink" href="./">&larr; Shared documents</a>
+  <h1>Fearless test run comparison: linux vs windows</h1>
+  <p class="lede">A side-by-side read of <a href="./linuxresults.html">linuxresults.html</a> (2026-09-13, linux3) and <a href="./winresults.html">winresults.html</a> (2026-09-14, win3), both run against <code>marcoautomation2/fearlessBranch3</code> after an <code>align-branches</code> reset to upstream main. This page asks three questions: what fails on both systems, what fails on only one, and whether the two runs were actually exercising the same events closely enough to answer the first two questions with confidence.</p>
+
+  <div class="status-banner">One same-named test fails on both systems, but not via the same code path &mdash; one platform-specific product bug confirmed on each side &mdash; the linux report's own totals contradict its own table &mdash; the shared manual test plan is written in Windows-only terms and the two runs verified it at different levels of rigor</div>
+  <p class="status-sub">Nothing here required a code change. One GitHub issue was filed (linked at the bottom) about the one finding with enough cross-platform evidence to act on; everything else is reported as-is for a human to prioritize.</p>
+
+  <h2>1. What the four JUnit suites agree on</h2>
+  <table>
+    <thead>
+      <tr><th>Suite</th><th class="num">Tests (linux)</th><th class="num">Tests (win)</th><th>Linux</th><th>Windows</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>TestAllFrontend</td><td class="num">981</td><td class="num">981</td><td><span class="pill pass">0 failed</span></td><td><span class="pill pass">0 failed</span></td></tr>
+      <tr><td>TestAllFrontendCoordinator</td><td class="num">258</td><td class="num">258</td><td><span class="pill pass">0 failed</span></td><td><span class="pill warn">0 failed, 1 assumption-skipped</span></td></tr>
+      <tr><td>TestAllFrontendCoordinatorIntegration</td><td class="num">1276</td><td class="num">1276</td><td><span class="pill pass">0 failed</span></td><td><span class="pill warn">0 failed, 1 assumption-skipped</span></td></tr>
+      <tr><td>TestAllController</td><td class="num">121</td><td class="num">121</td><td><span class="pill pass">0 failed</span></td><td><span class="pill pass">0 failed</span></td></tr>
+    </tbody>
+  </table>
+  <p>The four per-suite test counts are identical on both machines, on two different days, which is good evidence these are genuinely the same deterministic JUnit suites (not a coincidence of two independently-drifting checkouts) and that nothing landed on upstream main between the two runs that added or removed a test. On that narrow slice, linux and windows really are testing the same events, and both are clean.</p>
+
+  <h3>Open question: the two &ldquo;assumption-skipped&rdquo; tests</h3>
+  <p>Windows reports 2 JUnit-aborted (assumption-skipped) tests &mdash; one inside <code>TestAllFrontendCoordinator</code>, one inside the <code>integrationTests</code> phase &mdash; naming neither test nor the assumption that failed; its own report says the console summary gave no further detail. Linux reports plain <code>0 failed</code> on the same two suites with no mention of a skip category at all. Three explanations remain open and are not distinguishable from either report as written: the assumption is genuinely environment-gated and only trips on Windows (plausible: an OS-detection <code>Assume</code>); or it is timing/ordering-sensitive and could trip on either OS; or linux's own report-writer folds aborted/skipped tests into &ldquo;0 failed&rdquo; without surfacing them, hiding a skip that also happened there. Whoever generates these reports should have the underlying JUnit console output name the skipped test explicitly (it is available in the raw JUnit summary either way) instead of leaving this to be inferred.</p>
+
+  <h2>2. The one test that fails on both &mdash; but not for the same reason</h2>
+  <details open>
+    <summary>DesktopDragTest.aFileDraggedOntoAFolderMovesInsideIt <span class="pill warn">same test name, different failure site on each OS</span></summary>
+    <p>Both reports title this as &ldquo;a reproducible desktop-drag test failure,&rdquo; and it is tempting to read that as one confirmed cross-platform bug. Reading the actual assertion each one hit shows they are not the same failure:</p>
+    <p><strong>Windows</strong> aborts inside <code>Pilot.changed</code>, called from <code>DesktopDragTest.row()</code> (<a href="https://github.com/FearlessLang/Controllers/blob/main/src/agentTools/Pilot.java">Pilot.java</a> line 95, <code>assert bestN&gt;0</code>) &mdash; before the drag ever happens. The test presses an arrow key 400ms after the folder window opens and expects a visible selection-highlight change inside that window's own screenshot region; none is found. Run 1 failed on the very first arrow key (<code>VK_DOWN</code>); run 2 succeeded on that one but failed on the very next arrow key (<code>VK_UP</code>) a moment later. A window that never had focus at all would be expected to fail both arrow presses identically every run, so the evidence points more precisely at an intermittent focus/redraw race around the freshly-opened window than at a total, deterministic focus miss.</p>
+    <p><strong>Linux</strong> does not hit that assertion at all &mdash; both row() calls and the drag() itself complete without error &mdash; and instead fails the test's own final assertion: the file is still at its original path, never having moved into <code>destination/</code>. So on linux the mechanics of finding and dragging the icon all appear to work; only the file-manager's actual handling of the drop does not have the intended effect (or the drop lands on the wrong target, per the linux report's own stray-window-focus hypothesis).</p>
+    <p>Net: this is one brittle test failing reproducibly on both operating systems, evidence for a real weakness in how <code>DesktopDragTest</code> synchronizes with a freshly-opened, OS-native file manager window before driving it &mdash; but the two runs' own evidence does not support calling it &ldquo;the same bug&rdquo; underneath. It could equally be two distinct flaky-focus mechanisms that happen to share a brittle test. See the filed issue at the bottom of this page.</p>
+  </details>
+
+  <h2>3. Failures found on only one system</h2>
+  <h3>Linux only</h3>
+  <table>
+    <thead><tr><th>Finding</th><th>Detail</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Fearless-file icon never displays</td>
+        <td>Root-caused: <code>LinuxAssociations.put()</code> names the hicolor icon-theme directory after the source PNG's own pixel dimensions (e.g. <code>477x477</code>), a size <code>hicolor/index.theme</code> never declares, so no spec-compliant lookup (Nautilus included) ever finds it. This is inherently Linux-only: it is specific to the freedesktop icon-theme spec and has no Windows analogue. Test 1 scored 4/7 checks on linux for this reason; windows scored 7/7 on the equivalent checks.</td>
+      </tr>
+      <tr>
+        <td>Manager window does not reappear after a relaunch while already running</td>
+        <td>Linux's own report already hedges this as possibly specific to &ldquo;this synthetic, remote-controlled desktop session&rdquo; rather than a confirmed product bug, and recommends a human on a normal desktop session check it. Windows's equivalent step (Test 6) passed 3/3 cleanly with no such issue. Left as unconfirmed by both reports; not escalated further here.</td>
+      </tr>
+    </tbody>
+  </table>
+  <h3>Windows only</h3>
+  <table>
+    <thead><tr><th>Finding</th><th>Detail</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Compile/Run Output panel needs scrolling to see the full transcript</td>
+        <td>The plan's Test 3 step 4 requires all output visible with no scrolling; windows found the panel auto-scrolls to the bottom after 5 runs, hiding the first lines, even at full 1920&times;1080. This is Manager GUI code, not OS-integration code, so there is no structural reason to expect it is windows-only &mdash; see &sect;4 below for why linux's report cannot actually confirm or rule this out.</td>
+      </tr>
+      <tr>
+        <td><code>out/modular</code> build-directory race</td>
+        <td>Windows hit transient <code>module not found</code> javac errors when two Java-script launches (<code>TestAllController.java</code> and a delegated <code>TestAgentTools.java</code>/<code>DeployManagedFearless.java</code> run) wrote to the same <code>out/modular</code> concurrently in one checkout; fixed by serializing via process polling. Correctly identified by that report as an operational hazard, not a product bug. Linux's report does not mention hitting this. Windows' stricter exclusive file locking makes a concurrent-write race loud (a build error); nothing about the underlying scripts prevents the same race from happening silently on Linux, where concurrent writes to the same files do not error the same way &mdash; a silently corrupted build could be strictly worse than Windows's loud failure. Worth the user's attention given this machine setup runs multiple agents against shared working copies, but this is a process/documentation gap rather than a Coordinator/Build code defect with an obvious fix, so no issue was filed for it here.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>4. Are the two runs actually testing the same events?</h2>
+  <p>For the four automated JUnit suites: yes, convincingly (&sect;1). For everything else, only partly:</p>
+  <ul class="notes">
+    <li><strong>The shared manual plan is not actually OS-neutral.</strong> <a href="./manager-gui-tests.txt">manager-gui-tests.txt</a> (draft v7), linked identically from both reports as the source of truth, is written in Windows-specific terms throughout &mdash; it names <code>fearlessManaged0_001w.exe</code> and &ldquo;Explorer&rdquo; directly, with no Linux (or OS-neutral) variant. The linux run had to silently substitute a file manager (Nautilus) and a differently-named binary for every step that mentions these, an interpretive step the windows run did not need. Test 1's whole icon-lifecycle narrative (&sect;3) is a direct casualty of this: the plan was written around one OS's association model and the linux run is being graded against a script that does not actually describe how Linux file associations or icon themes work.</li>
+    <li><strong>The two runs verified the plan's own steps at different granularity.</strong> Windows numbers every check against the plan's own step numbers (e.g. &ldquo;Test 3, step 4&rdquo;) and explicitly quotes the plan's &ldquo;no need to scroll&rdquo; requirement as the thing it tested and failed. Linux reports Test 3 as a single pass (&ldquo;matched fixture output exactly&rdquo;) with no step breakdown and no mention of checking the no-scroll requirement at all. Since the Output panel is shared Manager GUI code with no obvious OS-specific rendering path, the most likely explanation is not that linux is bug-free here, but that the linux run verified output *content* and never exercised the specific UI-visibility check windows did. The windows-only finding in &sect;3 should be read as &ldquo;found on windows, not checked on linux,&rdquo; not &ldquo;present on windows, absent on linux.&rdquo;</li>
+    <li><strong>Different calendar days, not a pinned commit.</strong> Linux ran 2026-09-13, windows 2026-09-14, each independently reset to whatever upstream main was at that moment via <code>align-branches</code>. The four suites' matching test counts (&sect;1) are reassuring but not proof the two runs saw byte-identical source; a report that wants to make a precise cross-platform product claim should pin and record the commit hash it tested, which neither report does.</li>
+    <li><strong>No shared pass/fail/skip vocabulary.</strong> Windows distinguishes failed from assumption-skipped (JUnit &ldquo;aborted&rdquo;); linux's tables only have pass/fail. A test that is skipped rather than run cannot be silently equated with one that passed, and right now nothing forces the two report formats to agree on that distinction (&sect;1).</li>
+  </ul>
+  <p>One genuine point of agreement worth calling out on its own: both runs, independently and without prompting each other, discovered the exact same undocumented step &mdash; a freshly-added project folder needs one &ldquo;Become code&rdquo; click before Compile appears, which the plan text does not mention. Two independent runs landing on the identical, specific gap is good evidence <code>manager-gui-tests.txt</code> itself is missing a step, worth folding into the next draft of the plan.</p>
+
+  <h2>5. Report-generation defects found while comparing</h2>
+  <details open>
+    <summary>linuxresults.html's own summary banner contradicts its own suite table <span class="pill fail">confirmed by arithmetic</span></summary>
+    <p>The banner reads &ldquo;Automated suites: 4/4 green (1360/1360 tests)&rdquo;. The table directly beneath it lists 981 + 258 + 1276 + 121 = <strong>2636</strong> tests across those same four green suites &mdash; not 1360. The number 1360 is exactly 981 + 258 + 121: the 1276-test integration suite's count was dropped from the banner total while the suite itself is still listed and counted as one of the &ldquo;4/4 green&rdquo;. Windows's equivalent banner (&ldquo;2636/2636 tests&rdquo;) sums its own table correctly. This looks like an arithmetic bug in whatever produced linuxresults.html's headline number, not a real discrepancy in what actually ran &mdash; the per-suite failed-count column (all zero) is internally consistent and matches windows exactly (&sect;1) &mdash; but it means the linux report's own top-line claim should not be trusted at face value without checking the table under it.</p>
+    <p>A second, smaller instance of the same kind of slip sits in the footnote directly under the table: &ldquo;TestAllFrontendCoordinatorIntegration's 1276 total is two JUnit launches inside one script: 981 (Frontend+Coordinator, <em>same as the second row</em>) plus 295 integrationTests.&rdquo; The second row in that same table is <code>TestAllFrontendCoordinator</code>, whose count is 258, not 981 &mdash; 981 is the count on the <em>first</em> row (<code>TestAllFrontend</code>). Windows's parallel footnote states the same 981+295 breakdown without misattributing which row it matches.</p>
+  </details>
+
+  <h2>Recommendations</h2>
+  <ul class="notes">
+    <li>Give the manual test plan (<code>manager-gui-tests.txt</code>) an OS-neutral rewrite, or an explicit linux variant, instead of leaving Windows-specific wording (<code>.exe</code>, &ldquo;Explorer&rdquo;) for each linux run to silently reinterpret.</li>
+    <li>Add the &ldquo;Become code&rdquo; click as an explicit plan step (both runs independently hit it).</li>
+    <li>Have future automated-suite reports name the specific test behind any assumption-skip/abort, and use a consistent pass/fail/skip vocabulary across linux and windows reports.</li>
+    <li>Have future reports state the exact commit hash tested, not just the calendar date, so cross-machine comparisons are against a pinned snapshot.</li>
+    <li>Whoever/whatever generates a report's headline summary line should compute it from the same table it sits above, not restate it by hand &mdash; see &sect;5.</li>
+    <li>An issue was filed against <code>FearlessLang/Controllers</code> for the <code>DesktopDragTest</code> focus/timing brittleness described in &sect;2: <a href="https://github.com/FearlessLang/Controllers/issues/27">Controllers#27</a>. No code was changed as part of this task.</li>
+  </ul>
+
+  <footer>Generated by the Claude agent on marcoautomation2 as an overnight task (linux3), comparing linuxresults.html and winresults.html. GitHub issue filed: <a href="https://github.com/FearlessLang/Controllers/issues/27">FearlessLang/Controllers#27</a>. Full reasoning log kept in the fearlessBranch3 working copy's overnight logs, not published here.</footer>
+</main>
+</body>
+</html>
